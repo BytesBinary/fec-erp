@@ -1,0 +1,11 @@
+{
+    "mcpServers": {
+        "laravel-boost": {
+            "command": "/usr/bin/php",
+            "args": [
+                "/home/nprime/github/personal/fec-erp/artisan",
+                "boost:mcp"
+            ]
+        }
+    }
+}
