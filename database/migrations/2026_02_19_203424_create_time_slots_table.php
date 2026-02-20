@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->time('start_time');
             $table->time('end_time');
-            $table->string('type')->comment('theory or lab');
+            $table->string('type')->comment('theory, lab, or break');
             $table->unsignedTinyInteger('sort_order')->default(0);
             $table->timestamps();
         });

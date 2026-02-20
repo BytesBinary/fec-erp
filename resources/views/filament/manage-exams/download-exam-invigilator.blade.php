@@ -5,9 +5,12 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'DejaVu Sans', Arial, sans-serif; font-size: 10px; color: #111; padding: 28px 36px; }
-        .header { text-align: center; margin-bottom: 14px; }
-        .header h1 { font-size: 15px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
-        .header p { font-size: 9px; color: #555; margin-top: 2px; }
+        .header-table { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
+        .header-table td { border: none; padding: 0; vertical-align: middle; }
+        .header-logo-cell { width: 75px; text-align: left; }
+        .header-text-cell { text-align: center; }
+        .header-text-cell h1 { font-size: 15px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+        .header-text-cell p { font-size: 9px; color: #555; margin-top: 2px; }
         .subtitle { text-align: center; font-size: 12px; font-weight: bold; margin-bottom: 6px; }
         .time-row { text-align: center; font-size: 9px; color: #555; margin-bottom: 12px; }
 
@@ -48,15 +51,24 @@
         }
     @endphp
 
-    <div class="header">
-        @if($logoB64)
-            <img src="{{ $logoB64 }}" style="height:60px; display:block; margin:0 auto 8px;" alt="Logo">
-        @endif
-        <h1>{{ $setting->institution_name }}</h1>
-        @if($setting->address)
-            <p>{{ $setting->address }}</p>
-        @endif
-    </div>
+    <table class="header-table">
+        <tr>
+            <td class="header-logo-cell">
+                @if($logoB64)
+                    <img src="{{ $logoB64 }}" style="height:60px;" alt="Logo">
+                @endif
+            </td>
+            <td class="header-text-cell">
+                <h1>{{ $setting->institution_name }}</h1>
+                @if($setting->address)
+                    <p>{{ $setting->address }}</p>
+                @endif
+            </td>
+            @if($logoB64)
+                <td style="width:75px;"></td>
+            @endif
+        </tr>
+    </table>
 
     <div class="subtitle">Exam Invigilator Duty Sheet &mdash; {{ $examDuty['exam_name'] }} &mdash; {{ $examDuty['exam_year'] }}</div>
     <div class="time-row">Time: {{ $examDuty['start_time'] }} &ndash; {{ $examDuty['end_time'] }}</div>
