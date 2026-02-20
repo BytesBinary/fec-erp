@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ExamDuty extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = [
         'exam_name',
         'exam_type_id',
@@ -19,6 +22,6 @@ class ExamDuty extends Model
     ];
 
     protected $casts = [
-        'duty_details' => 'array', // Automatically handles JSON encoding/decoding
+        'duty_details' => 'array',
     ];
 }

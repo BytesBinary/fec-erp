@@ -14,6 +14,7 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
+use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use UnitEnum;
 
@@ -64,6 +65,7 @@ class RoutineResource extends Resource
                     ->boolean(),
             ])
             ->filters([
+                TrashedFilter::make(),
                 SelectFilter::make('department')
                     ->relationship('department', 'name')
                     ->searchable()
