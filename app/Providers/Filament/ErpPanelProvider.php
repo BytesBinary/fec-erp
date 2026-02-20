@@ -42,6 +42,14 @@ class ErpPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Amber,
             ])
+            ->navigationGroups([
+                'People',
+                'Routine',
+                'Manage Exams',
+                'Academic',
+                'Settings',
+            ])
+            ->sidebarCollapsibleOnDesktop(true)
             ->brandName(fn (): string => InstitutionSetting::current()->institution_name ?? 'ERP')
             ->brandLogo(function (): ?string {
                 $setting = InstitutionSetting::current();
