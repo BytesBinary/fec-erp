@@ -24,6 +24,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->boolean('is_active')->default(true);
             $table->unique(['code', 'version'], 'courses_code_version_unique');
+            $table->softDeletes();
             $table->timestamps();
         });
     }

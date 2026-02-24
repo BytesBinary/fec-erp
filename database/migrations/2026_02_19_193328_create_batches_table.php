@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('session', 20)->comment('e.g. 2017-2018');
             $table->unsignedTinyInteger('current_semester')->default(1)->comment('1-8');
             $table->boolean('is_active')->default(true);
+            $table->softDeletes();
             $table->timestamps();
 
             $table->unique(['department_id', 'batch_number']);

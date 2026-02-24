@@ -25,7 +25,7 @@ class ExamHallResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::BuildingOffice2;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Mange Exams';
+    protected static string|UnitEnum|null $navigationGroup = 'Manage Exams';
 
     protected static ?string $recordTitleAttribute = 'ExamHall';
 

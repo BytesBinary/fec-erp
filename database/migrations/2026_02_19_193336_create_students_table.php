@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('registration_number')->unique();
             $table->unsignedTinyInteger('current_semester')->default(1)->comment('1-8');
             $table->string('phone', 20)->nullable();
+            $table->softDeletes();
             $table->timestamps();
         });
     }

@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('short_name', 20)->nullable();
             $table->date('joining_date')->nullable();
             $table->string('phone', 20)->nullable();
+            $table->softDeletes();
             $table->timestamps();
         });
     }

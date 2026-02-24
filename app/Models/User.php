@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\UserRole;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -23,7 +22,6 @@ class User extends Authenticatable implements FilamentUser
         'name',
         'email',
         'password',
-        'role',
     ];
 
     /**
@@ -36,27 +34,7 @@ class User extends Authenticatable implements FilamentUser
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return $this->role !== UserRole::Student;
-    }
-
-    public function isAdmin(): bool
-    {
-        return $this->role === UserRole::Admin;
-    }
-
-    public function isTeacher(): bool
-    {
-        return $this->role === UserRole::Teacher;
-    }
-
-    public function isStaff(): bool
-    {
-        return $this->role === UserRole::Staff;
-    }
-
-    public function isStudent(): bool
-    {
-        return $this->role === UserRole::Student;
+        return true;
     }
 
     public function teacher(): HasOne
@@ -79,7 +57,6 @@ class User extends Authenticatable implements FilamentUser
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'role' => UserRole::class,
         ];
     }
 }

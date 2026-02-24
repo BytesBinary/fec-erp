@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Models\InstitutionSetting;
+use Filament\Enums\ThemeMode;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -42,6 +43,7 @@ class ErpPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Default,
             ])
+            ->defaultThemeMode(ThemeMode::Light)
             ->navigationGroups([
                 'People',
                 'Routine',

@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('employee_id')->unique();
             $table->date('joining_date')->nullable();
             $table->string('phone', 20)->nullable();
+            $table->softDeletes();
             $table->timestamps();
         });
     }

@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\Students\Pages;
 
-use App\Enums\UserRole;
 use App\Filament\Resources\Students\StudentResource;
 use App\Models\Student;
 use App\Models\User;
@@ -18,7 +17,6 @@ class CreateStudent extends CreateRecord
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => $data['password'],
-            'role' => UserRole::Student,
         ]);
 
         return Student::create([

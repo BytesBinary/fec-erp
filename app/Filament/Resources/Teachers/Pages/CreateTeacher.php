@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\Teachers\Pages;
 
-use App\Enums\UserRole;
 use App\Filament\Resources\Teachers\TeacherResource;
 use App\Models\Teacher;
 use App\Models\User;
@@ -18,7 +17,6 @@ class CreateTeacher extends CreateRecord
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => $data['password'],
-            'role' => UserRole::Teacher,
         ]);
 
         return Teacher::create([

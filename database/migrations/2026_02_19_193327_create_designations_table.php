@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('short_name', 30)->unique();
             $table->string('type')->comment('teacher or staff');
             $table->boolean('is_active')->default(true);
+            $table->softDeletes();
             $table->timestamps();
         });
     }

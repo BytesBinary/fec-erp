@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('department');
             $table->string('exam_year');
             $table->longText('duty_details');
+            $table->softDeletes();
             $table->timestamps();
         });
     }
