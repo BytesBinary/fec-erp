@@ -10,7 +10,7 @@
             This batch is inactive. Activate the batch to manage its routine.
         </div>
     @else
-        <div class="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700 shadow">
+        <div class="routine-scroll-wrapper rounded-xl border border-gray-200 dark:border-gray-700 shadow">
             <table class="routine-table">
                 <thead>
                     <tr>
@@ -58,14 +58,7 @@
                                                 <div class="assigned-course-code">{{ $a['course_code'] }}</div>
                                                 <div class="assigned-course-name" title="{{ $a['course_name'] }}">{{ $a['course_name'] }}</div>
                                                 <div class="assigned-teacher">{{ $a['teacher_short'] }}</div>
-                                                <button
-                                                    type="button"
-                                                    wire:click="clearSlot({{ $dayIndex }}, {{ $slot->id }})"
-                                                    wire:confirm="Remove this assignment?"
-                                                    class="slot-remove-btn"
-                                                >
-                                                    Remove
-                                                </button>
+                                                {{ ($this->clearSlotAction)(['day' => $dayIndex, 'timeSlotId' => $slot->id]) }}
                                             </div>
                                         @else
                                             @php $opts = $this->options[$dayIndex][$slot->id] ?? [] @endphp
@@ -91,5 +84,7 @@
                 </tbody>
             </table>
         </div>
+
+        <x-filament-actions::modals />
     @endif
 </x-filament-panels::page>

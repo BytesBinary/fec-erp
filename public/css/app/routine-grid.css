@@ -1,7 +1,8 @@
 /* Routine Grid Styles — loaded via FilamentAsset to avoid Tailwind compilation issues */
 
 .routine-table {
-    width: 100%;
+    width: max-content;
+    min-width: 100%;
     border-collapse: collapse;
     font-size: 0.875rem;
 }
@@ -236,4 +237,73 @@
     border-color: #4b5563;
     background-color: #374151;
     color: #e5e7eb;
+}
+
+/* ── Mobile responsive ── */
+
+.routine-scroll-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+}
+
+.slot-label-cell {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+}
+
+.routine-header-cell:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background-color: #f9fafb;
+}
+
+.dark .routine-header-cell:first-child {
+    background-color: #1f2937;
+}
+
+@media (max-width: 768px) {
+    .routine-table {
+        font-size: 0.75rem;
+    }
+
+    .routine-header-cell {
+        padding: 0.5rem;
+    }
+
+    .routine-header-cell--day {
+        min-width: 8rem;
+    }
+
+    .routine-cell {
+        padding: 0.375rem;
+    }
+
+    .slot-label-cell {
+        padding: 0.5rem;
+    }
+
+    .routine-cell--assigned-theory,
+    .routine-cell--assigned-lab {
+        padding: 0.375rem;
+    }
+
+    .assigned-course-code {
+        font-size: 0.675rem;
+    }
+
+    .assigned-course-name {
+        font-size: 0.675rem;
+        max-width: 6rem;
+    }
+
+    .assigned-teacher {
+        font-size: 0.675rem;
+    }
+
+    .slot-remove-btn {
+        font-size: 0.675rem;
+    }
 }

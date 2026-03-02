@@ -66,15 +66,11 @@ class ManageRoutine extends Page
 
                     $this->loadRoutine();
 
-                    $message = "Scheduled {$result['scheduled']} slots.";
-
-                    if (count($result['skipped']) > 0) {
-                        $message .= ' Skipped: '.implode(', ', $result['skipped']);
-                    }
+                    $skippedCount = count($result['skipped']);
+                    $message = "{$result['scheduled']} slots scheduled".($skippedCount > 0 ? ", {$skippedCount} courses skipped" : '');
 
                     Notification::make()
-                        ->title('Routine Generated')
-                        ->body($message)
+                        ->title($message)
                         ->success()
                         ->send();
                 }),
@@ -84,6 +80,28 @@ class ManageRoutine extends Page
                 ->color('success')
                 ->action('download'),
         ];
+    }
+
+    public function clearSlotAction(): Action
+    {
+        return Action::make('clearSlot')
+            ->label('Remove')
+            ->color('danger')
+            ->size('sm')
+            ->link()
+            ->icon(Heroicon::OutlinedXMark)
+            ->requiresConfirmation()
+            ->modalHeading('Remove Assignment')
+            ->modalDescription('Are you sure you want to remove this slot assignment?')
+            ->modalSubmitActionLabel('Yes, Remove')
+            ->action(function (array $arguments): void {
+                $this->clearSlot($arguments['day'], $arguments['timeSlotId']);
+
+                Notification::make()
+                    ->title('Slot removed')
+                    ->success()
+                    ->send();
+            });
     }
 
     public function timeSlots(): \Illuminate\Database\Eloquent\Collection
