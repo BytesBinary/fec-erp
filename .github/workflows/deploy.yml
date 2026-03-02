@@ -45,7 +45,7 @@ jobs:
       - name: Prepare deploy branch
         run: |
           # Remove dev-only files not needed in production
-          rm -rf node_modules tests .github .gitignore .editorconfig .env.example .vscode .codex .gemini .claude .junie *.md .github/workflows *.yml mcp.json boost.json phpunit.xml opencode.json .mcp.json .agents .gitattributes .gitattributes .gitmodules .github/ CODEOWNERS
+          rm -rf node_modules tests .github .editorconfig .env.example .vscode .codex .gemini .claude .junie *.md .github/workflows *.yml mcp.json boost.json phpunit.xml opencode.json .mcp.json .agents .gitattributes .gitattributes .gitmodules .github/ CODEOWNERS
 
           # Force add vendor and built assets (ignored in main)
           git config user.name "github-actions[bot]"
