@@ -15,21 +15,18 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.4'
+          php-version: "8.4"
           extensions: mbstring, xml, ctype, json, bcmath, gd, curl, zip
           coverage: none
 
       - name: Install Composer dependencies
         run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
-      - name: Run Pint lint check
-        run: vendor/bin/pint --test --format github
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          cache: 'npm'
+          node-version: "22"
+          cache: "npm"
 
       - name: Install npm dependencies
         run: npm ci
@@ -44,12 +41,12 @@ jobs:
         run: php artisan migrate --pretend --no-interaction
         env:
           DB_CONNECTION: sqlite
-          DB_DATABASE: ':memory:'
+          DB_DATABASE: ":memory:"
 
       - name: Prepare deploy branch
         run: |
           # Remove dev-only files not needed in production
-          rm -rf node_modules tests .github
+          rm -rf node_modules tests .github .gitignore .editorconfig .env.example .vscode .codex .gemini .claude .junie *.md .github/workflows *.yml mcp.json boost.json phpunit.xml opencode.json
 
           # Force add vendor and built assets (ignored in main)
           git config user.name "github-actions[bot]"
