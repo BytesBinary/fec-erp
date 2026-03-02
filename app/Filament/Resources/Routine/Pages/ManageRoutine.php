@@ -8,6 +8,7 @@ use App\Models\Course;
 use App\Models\InstitutionSetting;
 use App\Models\RoutineSlot;
 use App\Models\TimeSlot;
+use App\Services\RoutineGeneratorService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
@@ -49,6 +50,34 @@ class ManageRoutine extends Page
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('generateRoutine')
+                ->label('Generate Routine')
+                ->icon(Heroicon::OutlinedBolt)
+                ->color('warning')
+                ->requiresConfirmation()
+                ->modalHeading('Auto-Generate Routine for This Batch')
+                ->modalDescription('This will delete and regenerate all routine slots for this batch. Manual edits will be lost. Continue?')
+                ->modalSubmitActionLabel('Yes, Generate')
+                ->action(function (): void {
+                    /** @var Batch $batch */
+                    $batch = $this->record;
+
+                    $result = app(RoutineGeneratorService::class)->generateForBatch($batch);
+
+                    $this->loadRoutine();
+
+                    $message = "Scheduled {$result['scheduled']} slots.";
+
+                    if (count($result['skipped']) > 0) {
+                        $message .= ' Skipped: '.implode(', ', $result['skipped']);
+                    }
+
+                    Notification::make()
+                        ->title('Routine Generated')
+                        ->body($message)
+                        ->success()
+                        ->send();
+                }),
             Action::make('download')
                 ->label('Download PDF')
                 ->icon(Heroicon::OutlinedArrowDownTray)

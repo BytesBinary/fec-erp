@@ -30,6 +30,7 @@ class ErpPanelProvider extends PanelProvider
     {
         FilamentAsset::register([
             Css::make('routine-grid', resource_path('css/filament/routine-grid.css')),
+            Css::make('report-table', resource_path('css/filament/report-table.css')),
         ]);
     }
 

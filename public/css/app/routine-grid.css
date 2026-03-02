@@ -214,6 +214,24 @@
     border-color: #f59e0b;
 }
 
+.routine-break-cell {
+    background-color: #f3f4f6;
+    text-align: center;
+    color: #9ca3af;
+    font-size: 0.75em;
+    vertical-align: middle;
+}
+
+.dark .routine-break-cell {
+    background-color: rgba(31, 41, 55, 0.5);
+    color: #6b7280;
+}
+
+.routine-break-header {
+    background-color: #6b7280;
+    min-width: 80px;
+}
+
 .dark .slot-select {
     border-color: #4b5563;
     background-color: #374151;

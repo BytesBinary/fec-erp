@@ -19,7 +19,7 @@
                         </th>
                         @foreach ($timeSlots as $slot)
                             @if ($slot->type === \App\Enums\CourseType::Break)
-                                <th class="routine-header-cell" style="background:#6b7280; min-width:80px;">
+                                <th class="routine-header-cell routine-break-header">
                                     <div>Break</div>
                                     <div style="font-size:0.7em; font-weight:normal; opacity:0.85;">
                                         {{ \Carbon\Carbon::parse($slot->start_time)->format('h:i A') }}<br>{{ \Carbon\Carbon::parse($slot->end_time)->format('h:i A') }}
@@ -47,7 +47,7 @@
                             </td>
                             @foreach ($timeSlots as $slot)
                                 @if ($slot->type === \App\Enums\CourseType::Break)
-                                    <td style="background:#f3f4f6; text-align:center; color:#9ca3af; font-size:0.75em; vertical-align:middle;">
+                                    <td class="routine-break-cell">
                                         Break
                                     </td>
                                 @else

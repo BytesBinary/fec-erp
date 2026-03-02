@@ -13,41 +13,43 @@ use Illuminate\Support\Facades\Hash;
 class TeacherSeeder extends Seeder
 {
     /**
-     * Teachers indexed by department code.
-     * Each entry: [name, email, employeeId, shortName, designation (Prof/Assoc/Asst/Lec)]
+     * Teachers grouped by department code.
+     * Each entry: [name, email, employeeId, shortName, designationName]
      *
      * @var array<string, array<int, array{0: string, 1: string, 2: string, 3: string, 4: string}>>
      */
     private array $teachers = [
         'CSE' => [
-            ['Dr. Md. Rahman Chowdhury', 'rahman.cse@fec.edu.bd', 'CSE001', 'MRC', 'Professor'],
-            ['Dr. Nur Islam Miah', 'nurislam.cse@fec.edu.bd', 'CSE002', 'NIM', 'Associate Professor'],
-            ['Md. Hasan Ali', 'hasan.cse@fec.edu.bd', 'CSE003', 'MHA', 'Assistant Professor'],
-            ['Farhana Begum', 'farhana.cse@fec.edu.bd', 'CSE004', 'FB', 'Lecturer'],
+            ['Md. Suman Reza',        'suman.reza@fec.edu.bd',        'CSE001', 'MSR', 'Lecturer'],
+            ['Md. Rasel Ahmed',        'rasel.ahmed@fec.edu.bd',       'CSE002', 'MRA', 'Lecturer'],
+            ['Zannatun Naeem',         'zannatun.naeem@fec.edu.bd',    'CSE003', 'ZN',  'Lecturer'],
+            ['Chandra Mohan Halder',   'chandra.halder@fec.edu.bd',    'CSE004', 'CMH', 'Lecturer'],
+            ['Sameya Akter',           'sameya.akter@fec.edu.bd',      'CSE005', 'SA',  'Lecturer'],
         ],
         'EEE' => [
-            ['Dr. Aminul Haque', 'aminul.eee@fec.edu.bd', 'EEE001', 'AH', 'Professor'],
-            ['Dr. Shahidul Islam', 'shahidul.eee@fec.edu.bd', 'EEE002', 'SI', 'Associate Professor'],
-            ['Md. Rofiqul Islam', 'rofiqul.eee@fec.edu.bd', 'EEE003', 'RI', 'Assistant Professor'],
-            ['Nasrin Akter', 'nasrin.eee@fec.edu.bd', 'EEE004', 'NA', 'Lecturer'],
+            ['Md. Zillur Rahman',      'zillur.rahman@fec.edu.bd',     'EEE001', 'MZR', 'Lecturer'],
+            ['Md. Shah Jamal Molla',   'shahjamol.molla@fec.edu.bd',   'EEE002', 'MSJ', 'Lecturer'],
+            ['Md. Rany Ahmed',         'rany.ahmed@fec.edu.bd',        'EEE003', 'MRA', 'Lecturer'],
+            ['Ayesha Akter',           'ayesha.akter@fec.edu.bd',      'EEE004', 'AA',  'Lecturer'],
+            ['Afia Begum',             'afia.begum@fec.edu.bd',        'EEE005', 'AB',  'Lecturer'],
         ],
         'CE' => [
-            ['Dr. Abdul Karim', 'karim.ce@fec.edu.bd', 'CE001', 'AK', 'Professor'],
-            ['Md. Mostafizur Rahman', 'mostafiz.ce@fec.edu.bd', 'CE002', 'MMR', 'Associate Professor'],
-            ['Md. Jahangir Alam', 'jahangir.ce@fec.edu.bd', 'CE003', 'MJA', 'Assistant Professor'],
-            ['Roksana Parvin', 'roksana.ce@fec.edu.bd', 'CE004', 'RP', 'Lecturer'],
+            ['Mohammad Shamsul Islam', 'shamsul.islam@fec.edu.bd',     'CE001',  'MSI', 'Lecturer'],
+            ['Md. Tuhin Reza',         'tuhin.reza@fec.edu.bd',        'CE002',  'MTR', 'Lecturer'],
+            ['Md. Ekhlas Uddin',       'ekhlas.uddin@fec.edu.bd',      'CE003',  'MEU', 'Lecturer'],
+            ['Muhammad Younus Ali',    'younus.ali@fec.edu.bd',        'CE004',  'MYA', 'Lecturer'],
         ],
         'ME' => [
-            ['Dr. Syed Mahbubur Rahman', 'mahbubur.me@fec.edu.bd', 'ME001', 'SMR', 'Professor'],
-            ['Md. Khairul Islam', 'khairul.me@fec.edu.bd', 'ME002', 'MKI', 'Associate Professor'],
-            ['Md. Shamsul Alam', 'shamsul.me@fec.edu.bd', 'ME003', 'MSA', 'Assistant Professor'],
-            ['Sultana Razia', 'sultana.me@fec.edu.bd', 'ME004', 'SR', 'Lecturer'],
+            ['Md. Fahad Hossain',      'fahad.hossain@fec.edu.bd',     'ME001',  'MFH', 'Lecturer'],
+            ['Puja Brahma',            'puja.brahma@fec.edu.bd',       'ME002',  'PB',  'Lecturer'],
+            ['Partha Mandal',          'partha.mandal@fec.edu.bd',     'ME003',  'PM',  'Lecturer'],
+            ['Apurbo Biswas',          'apurbo.biswas@fec.edu.bd',     'ME004',  'APB', 'Lecturer'],
         ],
         'ETE' => [
-            ['Dr. Md. Rafiqul Islam', 'rafiqul.ete@fec.edu.bd', 'ETE001', 'MRI', 'Professor'],
-            ['Md. Moniruzzaman', 'monir.ete@fec.edu.bd', 'ETE002', 'MM', 'Associate Professor'],
-            ['Md. Kamrul Hasan', 'kamrul.ete@fec.edu.bd', 'ETE003', 'MKH', 'Assistant Professor'],
-            ['Tahmina Akter', 'tahmina.ete@fec.edu.bd', 'ETE004', 'TA', 'Lecturer'],
+            ['Foyshal Ahmed',          'foyshal.ahmed@fec.edu.bd',     'ETE001', 'FA',  'Lecturer'],
+            ['Md. Afser Jani',         'afser.jani@fec.edu.bd',        'ETE002', 'MAJ', 'Lecturer'],
+            ['Md. Shihab Uddin',       'shihab.uddin@fec.edu.bd',      'ETE003', 'MSU', 'Lecturer'],
+            ['Md. Shohanur Rahman',    'shohanur.rahman@fec.edu.bd',   'ETE004', 'MSHR', 'Lecturer'],
         ],
     ];
 
@@ -66,7 +68,7 @@ class TeacherSeeder extends Seeder
             foreach ($teacherList as [$name, $email, $employeeId, $shortName, $designationName]) {
                 $designationId = $designations[$designationName] ?? null;
 
-                $user = User::firstOrCreate(
+                $user = User::updateOrCreate(
                     ['email' => $email],
                     [
                         'name' => $name,
@@ -74,7 +76,7 @@ class TeacherSeeder extends Seeder
                     ]
                 );
 
-                Teacher::firstOrCreate(
+                Teacher::updateOrCreate(
                     ['employee_id' => $employeeId],
                     [
                         'user_id' => $user->id,
