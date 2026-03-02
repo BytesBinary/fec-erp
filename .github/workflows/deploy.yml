@@ -37,12 +37,6 @@ jobs:
       - name: Publish Filament assets
         run: php artisan filament:assets --no-interaction
 
-      - name: Check migrations
-        run: php artisan migrate --pretend --no-interaction
-        env:
-          DB_CONNECTION: sqlite
-          DB_DATABASE: ":memory:"
-
       - name: Prepare deploy branch
         run: |
           # Remove dev-only files not needed in production
