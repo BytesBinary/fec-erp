@@ -6,6 +6,7 @@ use App\Models\Course;
 use App\Models\Department;
 use App\Models\Teacher;
 use BackedEnum;
+use Database\Seeders\CourseTeacherSeeder;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
@@ -166,6 +167,28 @@ class AssignTeachers extends Page
         $state = $this->form->getState();
 
         return ! empty($state['department_id']) && ! empty($state['semester']);
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('autoAssign')
+                ->label('Auto-Assign All Teachers')
+                ->icon(Heroicon::OutlinedBolt)
+                ->color('warning')
+                ->requiresConfirmation()
+                ->modalHeading('Auto-Assign Teachers')
+                ->modalDescription('This will run the round-robin teacher assignment across all departments and courses. Existing assignments are preserved (not overwritten). Continue?')
+                ->modalSubmitActionLabel('Yes, Auto-Assign')
+                ->action(function (): void {
+                    app(CourseTeacherSeeder::class)->run();
+
+                    Notification::make()
+                        ->success()
+                        ->title('Teachers auto-assigned to all courses.')
+                        ->send();
+                }),
+        ];
     }
 
     protected function getFormActions(): array

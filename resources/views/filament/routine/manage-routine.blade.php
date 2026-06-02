@@ -46,18 +46,30 @@
                                 <div class="slot-label-name">{{ $dayName }}</div>
                             </td>
                             @foreach ($timeSlots as $slot)
+                                {{-- Skip slots that are lab continuations (rendered via colspan on primary) --}}
+                                @if (!empty($this->labContinuations[$dayIndex][$slot->id]))
+                                    @continue
+                                @endif
+
                                 @if ($slot->type === \App\Enums\CourseType::Break)
                                     <td class="routine-break-cell">
                                         Break
                                     </td>
                                 @else
-                                    <td class="routine-cell">
-                                        @if (isset($this->assignments[$dayIndex][$slot->id]))
-                                            @php $a = $this->assignments[$dayIndex][$slot->id] @endphp
+                                    @php
+                                        $a = $this->assignments[$dayIndex][$slot->id] ?? null;
+                                        $span = $a ? ($a['lab_span'] ?? 1) : 1;
+                                    @endphp
+                                    <td class="routine-cell" colspan="{{ $span }}"
+                                        @if($span > 1) style="background: #fef9c3 !important;" @endif>
+                                        @if ($a)
                                             <div class="{{ str_contains($a['course_type'], 'Lab') ? 'routine-cell--assigned-lab' : 'routine-cell--assigned-theory' }}">
                                                 <div class="assigned-course-code">{{ $a['course_code'] }}</div>
                                                 <div class="assigned-course-name" title="{{ $a['course_name'] }}">{{ $a['course_name'] }}</div>
                                                 <div class="assigned-teacher">{{ $a['teacher_short'] }}</div>
+                                                @if($span > 1)
+                                                    <div style="font-size: 0.65em; opacity: 0.7; margin-top: 2px;">Lab ({{ $span }} periods)</div>
+                                                @endif
                                                 {{ ($this->clearSlotAction)(['day' => $dayIndex, 'timeSlotId' => $slot->id]) }}
                                             </div>
                                         @else

@@ -23,6 +23,8 @@ class ViewExamDuty extends Page
     /** @var array<string, mixed> */
     public array $examDuty = [];
 
+    public bool $enableSupervisor = true;
+
     public function mount(int|string $record): void
     {
         $duty = ExamDuty::findOrFail($record);
@@ -51,6 +53,8 @@ class ViewExamDuty extends Page
             'end_time' => $duty->end_time,
             'duty_details' => $resolved,
         ];
+
+        $this->enableSupervisor = (bool) InstitutionSetting::current()->enable_supervisor;
     }
 
     public function getTitle(): string
@@ -74,6 +78,7 @@ class ViewExamDuty extends Page
         $pdf = Pdf::loadView('filament.manage-exams.download-exam-invigilator', [
             'examDuty' => $this->examDuty,
             'setting' => InstitutionSetting::current(),
+            'enableSupervisor' => $this->enableSupervisor,
         ])->setPaper('a4', 'landscape');
 
         return response()->streamDownload(

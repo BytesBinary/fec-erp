@@ -8,6 +8,7 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
@@ -103,6 +104,14 @@ class InstitutionSettings extends Page
                             ->maxSize(1024)
                             ->preserveFilenames()
                             ->columnSpanFull(),
+                    ]),
+
+                Section::make('Exam Settings')
+                    ->schema([
+                        Toggle::make('enable_supervisor')
+                            ->label('Enable Supervisor in Exam Duty')
+                            ->helperText('When disabled, the supervisor field will be hidden when creating exam duties.')
+                            ->default(true),
                     ]),
             ])
             ->statePath('data');

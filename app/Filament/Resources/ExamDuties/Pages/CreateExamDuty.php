@@ -9,6 +9,7 @@ use App\Models\Department;
 use App\Models\ExamDuty;
 use App\Models\ExamHall;
 use App\Models\ExamType;
+use App\Models\InstitutionSetting;
 use App\Models\Teacher;
 use App\Models\User;
 use Filament\Actions\Action;
@@ -226,7 +227,8 @@ class CreateExamDuty extends Page
                                     ->multiple()
                                     ->reactive()
                                     ->options(User::whereIn('id', Teacher::pluck('user_id')->toArray())->pluck('name', 'id')->toArray())
-                                    ->required(),
+                                    ->required(fn (): bool => (bool) InstitutionSetting::current()->enable_supervisor)
+                                    ->hidden(fn (): bool => ! InstitutionSetting::current()->enable_supervisor),
 
                                 Select::make('invigilator')
                                     ->label('Invigilator')

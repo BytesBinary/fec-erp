@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Routine\Pages;
 
+use App\Enums\CourseType;
 use App\Filament\Resources\Routine\RoutineResource;
 use App\Models\Batch;
 use App\Models\Course;
@@ -15,6 +16,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Concerns\InteractsWithRecord;
 use Filament\Resources\Pages\Page;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Str;
 
 class ManageRoutine extends Page
 {
@@ -24,7 +26,7 @@ class ManageRoutine extends Page
 
     protected string $view = 'filament.routine.manage-routine';
 
-    /** @var array<int, array<int, array{slot_id: int, course_id: int, teacher_id: int, course_code: string, course_name: string, course_type: string, teacher_name: string, teacher_short: string}>> */
+    /** @var array<int, array<int, array{slot_id: int, course_id: int, teacher_id: int, course_code: string, course_name: string, course_type: string, teacher_name: string, teacher_short: string, slot_group_id: ?string, lab_span: int}>> */
     public array $assignments = [];
 
     /** @var array<int, array<int, array<string, string>>> */
@@ -32,6 +34,9 @@ class ManageRoutine extends Page
 
     /** @var array<int, string> */
     public array $dayNames = RoutineSlot::DAYS;
+
+    /** Tracks which [day][time_slot_id] are lab continuation slots (should be skipped in rendering). */
+    public array $labContinuations = [];
 
     public function mount(int|string $record): void
     {
@@ -114,13 +119,27 @@ class ManageRoutine extends Page
         /** @var Batch $batch */
         $batch = $this->record;
 
-        $slots = RoutineSlot::where('batch_id', $batch->id)
+        $allBatchSlots = RoutineSlot::where('batch_id', $batch->id)
             ->with(['course', 'teacher.user', 'timeSlot'])
             ->get();
 
+        $slots = $allBatchSlots->where('is_lab_continuation', false);
+        $continuations = $allBatchSlots->where('is_lab_continuation', true);
+
         $this->assignments = [];
+        $this->labContinuations = [];
+
+        foreach ($continuations as $cont) {
+            $this->labContinuations[$cont->day_of_week][$cont->time_slot_id] = true;
+        }
 
         foreach ($slots as $slot) {
+            $labSpan = 1;
+
+            if ($slot->slot_group_id) {
+                $labSpan = RoutineSlot::where('slot_group_id', $slot->slot_group_id)->count();
+            }
+
             $this->assignments[$slot->day_of_week][$slot->time_slot_id] = [
                 'slot_id' => $slot->id,
                 'course_id' => $slot->course_id,
@@ -130,6 +149,8 @@ class ManageRoutine extends Page
                 'course_type' => $slot->course->type->label(),
                 'teacher_name' => $slot->teacher->user->name,
                 'teacher_short' => $slot->teacher->short_name ?? $slot->teacher->user->name,
+                'slot_group_id' => $slot->slot_group_id,
+                'lab_span' => $labSpan,
             ];
         }
 
@@ -141,10 +162,8 @@ class ManageRoutine extends Page
         /** @var Batch $batch */
         $batch = $this->record;
 
-        // Build map of all existing assignments: [day][timeSlotId] => slot_id
-        $allSlots = RoutineSlot::select('id', 'teacher_id', 'batch_id', 'day_of_week', 'time_slot_id')->get();
+        $allSlots = RoutineSlot::select('id', 'teacher_id', 'batch_id', 'day_of_week', 'time_slot_id', 'is_lab_continuation')->get();
 
-        // Courses for this batch's department + semester
         $courses = Course::where('department_id', $batch->department_id)
             ->where('semester_number', $batch->current_semester)
             ->where('is_active', true)
@@ -158,10 +177,23 @@ class ManageRoutine extends Page
 
         foreach ($days as $day) {
             foreach ($timeSlots as $slot) {
+                // Slots that are lab continuations can't be assigned directly
+                $isContinuation = $allSlots
+                    ->where('batch_id', $batch->id)
+                    ->where('day_of_week', $day)
+                    ->where('time_slot_id', $slot->id)
+                    ->where('is_lab_continuation', true)
+                    ->isNotEmpty();
+
+                if ($isContinuation) {
+                    $this->options[$day][$slot->id] = [];
+
+                    continue;
+                }
+
                 $currentAssignment = $this->assignments[$day][$slot->id] ?? null;
                 $currentSlotId = $currentAssignment ? $currentAssignment['slot_id'] : null;
 
-                // Check if batch is already busy at this slot (excluding current assignment)
                 $batchBusy = $allSlots
                     ->where('batch_id', $batch->id)
                     ->where('day_of_week', $day)
@@ -175,7 +207,6 @@ class ManageRoutine extends Page
                     continue;
                 }
 
-                // Busy teacher IDs at this slot (excluding current assignment)
                 $busyTeacherIds = $allSlots
                     ->where('day_of_week', $day)
                     ->where('time_slot_id', $slot->id)
@@ -186,8 +217,12 @@ class ManageRoutine extends Page
                 $opts = [];
 
                 foreach ($courses as $course) {
-                    // Only offer courses whose type matches the slot type
-                    if ($course->type !== $slot->type) {
+                    // Lab courses can go in theory slots (3-in-a-row) or dedicated lab slots
+                    // Theory courses only go in theory slots
+                    $slotCompatible = $course->type === $slot->type
+                        || ($course->type === CourseType::Lab && $slot->type === CourseType::Theory);
+
+                    if (! $slotCompatible) {
                         continue;
                     }
 
@@ -217,7 +252,17 @@ class ManageRoutine extends Page
 
         [$courseId, $teacherId] = explode('|', $value);
 
-        // Double-check batch slot is free
+        $course = Course::find($courseId);
+        $timeSlot = TimeSlot::find($timeSlotId);
+
+        // Lab course assigned to a theory slot → 3-in-a-row
+        if ($course->type === CourseType::Lab && $timeSlot->type === CourseType::Theory) {
+            $this->assignLabSpan($batch, $day, $timeSlot, (int) $courseId, (int) $teacherId);
+
+            return;
+        }
+
+        // Standard single-slot assignment
         $batchBusy = RoutineSlot::where('batch_id', $batch->id)
             ->where('day_of_week', $day)
             ->where('time_slot_id', $timeSlotId)
@@ -230,7 +275,6 @@ class ManageRoutine extends Page
             return;
         }
 
-        // Double-check teacher is free
         $teacherBusy = RoutineSlot::where('teacher_id', $teacherId)
             ->where('day_of_week', $day)
             ->where('time_slot_id', $timeSlotId)
@@ -242,9 +286,6 @@ class ManageRoutine extends Page
 
             return;
         }
-
-        $slot = TimeSlot::find($timeSlotId);
-        $course = Course::find($courseId);
 
         RoutineSlot::create([
             'department_id' => $batch->department_id,
@@ -260,15 +301,85 @@ class ManageRoutine extends Page
         $this->loadRoutine();
     }
 
+    private function assignLabSpan(Batch $batch, int $day, TimeSlot $startSlot, int $courseId, int $teacherId): void
+    {
+        $theorySlots = TimeSlot::where('type', CourseType::Theory)
+            ->orderBy('sort_order')
+            ->get();
+
+        $startIndex = $theorySlots->search(fn ($s) => $s->id === $startSlot->id);
+
+        if ($startIndex === false || $startIndex + 2 >= $theorySlots->count()) {
+            Notification::make()->warning()->title('Not enough consecutive theory slots available for lab (need 3 in a row).')->send();
+
+            return;
+        }
+
+        $spanSlots = $theorySlots->slice($startIndex, 3)->values();
+
+        foreach ($spanSlots as $slot) {
+            $batchBusy = RoutineSlot::where('batch_id', $batch->id)
+                ->where('day_of_week', $day)
+                ->where('time_slot_id', $slot->id)
+                ->exists();
+
+            if ($batchBusy) {
+                Notification::make()->warning()->title("Slot {$slot->name} is already occupied for this batch.")->send();
+
+                return;
+            }
+
+            $teacherBusy = RoutineSlot::where('teacher_id', $teacherId)
+                ->where('day_of_week', $day)
+                ->where('time_slot_id', $slot->id)
+                ->exists();
+
+            if ($teacherBusy) {
+                Notification::make()->warning()->title("Teacher is already assigned during {$slot->name}.")->send();
+
+                return;
+            }
+        }
+
+        $groupId = Str::ulid()->toString();
+
+        foreach ($spanSlots as $index => $slot) {
+            RoutineSlot::create([
+                'department_id' => $batch->department_id,
+                'batch_id' => $batch->id,
+                'semester_number' => $batch->current_semester,
+                'day_of_week' => $day,
+                'time_slot_id' => $slot->id,
+                'course_id' => $courseId,
+                'teacher_id' => $teacherId,
+                'slot_group_id' => $groupId,
+                'is_lab_continuation' => $index > 0,
+            ]);
+        }
+
+        Notification::make()->success()->title('Lab assigned across 3 consecutive slots.')->send();
+        $this->loadRoutine();
+    }
+
     public function clearSlot(int $day, int $timeSlotId): void
     {
         /** @var Batch $batch */
         $batch = $this->record;
 
-        RoutineSlot::where('batch_id', $batch->id)
+        $slot = RoutineSlot::where('batch_id', $batch->id)
             ->where('day_of_week', $day)
             ->where('time_slot_id', $timeSlotId)
-            ->delete();
+            ->first();
+
+        if (! $slot) {
+            return;
+        }
+
+        if ($slot->slot_group_id) {
+            RoutineSlot::where('slot_group_id', $slot->slot_group_id)->delete();
+        } else {
+            $slot->delete();
+        }
 
         $this->loadRoutine();
     }

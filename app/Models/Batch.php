@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -19,15 +20,12 @@ class Batch extends Model
         'session',
         'current_semester',
         'is_active',
+        'is_archived',
     ];
 
-    protected static function booted(): void
+    public function scopeNotArchived(Builder $query): Builder
     {
-        static::updated(function (Batch $batch): void {
-            if ($batch->wasChanged('is_active') && ! $batch->is_active) {
-                $batch->routineSlots()->delete();
-            }
-        });
+        return $query->where('is_archived', false);
     }
 
     public function department(): BelongsTo
@@ -56,6 +54,7 @@ class Batch extends Model
             'batch_number' => 'integer',
             'current_semester' => 'integer',
             'is_active' => 'boolean',
+            'is_archived' => 'boolean',
         ];
     }
 }

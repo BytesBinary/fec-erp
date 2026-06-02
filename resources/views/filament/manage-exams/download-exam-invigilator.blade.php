@@ -49,6 +49,8 @@
         if ($setting->signatureAbsPath() && file_exists($setting->signatureAbsPath())) {
             $sigB64 = 'data:'.mime_content_type($setting->signatureAbsPath()).';base64,'.base64_encode(file_get_contents($setting->signatureAbsPath()));
         }
+        $enableSupervisor = $enableSupervisor ?? true;
+        $colspan = $enableSupervisor ? 7 : 5;
     @endphp
 
     <table class="header-table">
@@ -81,13 +83,14 @@
                 <th style="width:70px;">Signature</th>
                 <th>Course</th>
                 <th>Exam Hall</th>
-                <th>Supervisor</th>
-                <th style="width:70px;">Supervisor<br>Signature</th>
+                @if($enableSupervisor)
+                    <th>Supervisor</th>
+                    <th style="width:70px;">Supervisor<br>Signature</th>
+                @endif
             </tr>
         </thead>
         <tbody>
             @forelse($examDuty['duty_details'] as $detail)
-                {{-- One row per date; all values stacked inside cells, no rowspan --}}
                 <tr>
                     <td class="date-cell">{{ $detail['date'] }}</td>
 
@@ -97,7 +100,6 @@
                         @endforeach
                     </td>
 
-                    {{-- Signature column: one blank line per invigilator --}}
                     <td class="sig-cell">
                         @foreach($detail['invigilator'] as $name)
                             <div class="item" style="min-height:18px;">&nbsp;</div>
@@ -116,22 +118,23 @@
                         @endforeach
                     </td>
 
-                    <td>
-                        @foreach($detail['supervisor'] as $name)
-                            <div class="item">{{ $name }}</div>
-                        @endforeach
-                    </td>
+                    @if($enableSupervisor)
+                        <td>
+                            @foreach($detail['supervisor'] as $name)
+                                <div class="item">{{ $name }}</div>
+                            @endforeach
+                        </td>
 
-                    {{-- Supervisor signature column: one blank line per supervisor --}}
-                    <td class="sig-cell">
-                        @foreach($detail['supervisor'] as $name)
-                            <div class="item" style="min-height:18px;">&nbsp;</div>
-                        @endforeach
-                    </td>
+                        <td class="sig-cell">
+                            @foreach($detail['supervisor'] as $name)
+                                <div class="item" style="min-height:18px;">&nbsp;</div>
+                            @endforeach
+                        </td>
+                    @endif
                 </tr>
             @empty
                 <tr>
-                    <td colspan="7" style="text-align:center; color:#999; padding:12px;">No duty details found.</td>
+                    <td colspan="{{ $colspan }}" style="text-align:center; color:#999; padding:12px;">No duty details found.</td>
                 </tr>
             @endforelse
         </tbody>

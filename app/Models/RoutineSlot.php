@@ -19,6 +19,8 @@ class RoutineSlot extends Model
         'time_slot_id',
         'course_id',
         'teacher_id',
+        'slot_group_id',
+        'is_lab_continuation',
     ];
 
     /** @var array<int, string> */
@@ -65,6 +67,7 @@ class RoutineSlot extends Model
         return [
             'day_of_week' => 'integer',
             'semester_number' => 'integer',
+            'is_lab_continuation' => 'boolean',
         ];
     }
 }

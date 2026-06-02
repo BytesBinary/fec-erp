@@ -17,7 +17,15 @@ class InstitutionSetting extends Model
         'principal_name',
         'principal_title',
         'principal_signature_path',
+        'enable_supervisor',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'enable_supervisor' => 'boolean',
+        ];
+    }
 
     public static function current(): self
     {

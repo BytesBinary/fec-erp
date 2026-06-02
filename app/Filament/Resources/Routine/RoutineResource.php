@@ -16,6 +16,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use UnitEnum;
 
 class RoutineResource extends Resource
@@ -39,6 +40,11 @@ class RoutineResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema;
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->where('is_archived', false);
     }
 
     public static function table(Table $table): Table

@@ -12,7 +12,9 @@
                     <th style="border:1px solid #bbb; padding:8px;">Invigilator(s)</th>
                     <th style="border:1px solid #bbb; padding:8px;">Course(s)</th>
                     <th style="border:1px solid #bbb; padding:8px;">Exam Hall(s)</th>
-                    <th style="border:1px solid #bbb; padding:8px;">Supervisor(s)</th>
+                    @if($this->enableSupervisor)
+                        <th style="border:1px solid #bbb; padding:8px;">Supervisor(s)</th>
+                    @endif
                 </tr>
             </thead>
             <tbody>
@@ -34,15 +36,17 @@
                                 <div>{{ $hall }}</div>
                             @endforeach
                         </td>
-                        <td style="border:1px solid #bbb; padding:8px;">
-                            @foreach($detail['supervisor'] as $name)
-                                <div>{{ $name }}</div>
-                            @endforeach
-                        </td>
+                        @if($this->enableSupervisor)
+                            <td style="border:1px solid #bbb; padding:8px;">
+                                @foreach($detail['supervisor'] as $name)
+                                    <div>{{ $name }}</div>
+                                @endforeach
+                            </td>
+                        @endif
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" style="border:1px solid #bbb; padding:8px; text-align:center; color:#999;">No duty details found.</td>
+                        <td colspan="{{ $this->enableSupervisor ? 5 : 4 }}" style="border:1px solid #bbb; padding:8px; text-align:center; color:#999;">No duty details found.</td>
                     </tr>
                 @endforelse
             </tbody>
