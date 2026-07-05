@@ -16,6 +16,7 @@ use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use UnitEnum;
 
 class MasterRoutineReport extends Page
@@ -173,7 +174,7 @@ class MasterRoutineReport extends Page
         }
     }
 
-    public function download(): \Symfony\Component\HttpFoundation\StreamedResponse
+    public function download(): StreamedResponse
     {
         if (! $this->hasResults) {
             Notification::make()->warning()->title('Generate the report first.')->send();
@@ -192,6 +193,25 @@ class MasterRoutineReport extends Page
         );
     }
 
+    public function downloadExcel(): StreamedResponse
+    {
+        if (! $this->hasResults) {
+            Notification::make()->warning()->title('Generate the report first.')->send();
+        }
+
+        $xml = view('filament.routine.master-routine-excel', [
+            'reportRows' => $this->reportRows,
+            'timeSlots' => $this->timeSlots,
+            'days' => $this->days,
+        ])->render();
+
+        return response()->streamDownload(
+            fn () => print ($xml),
+            'master-routine-'.now()->format('Y-m-d').'.xls',
+            ['Content-Type' => 'application/vnd.ms-excel; charset=utf-8'],
+        );
+    }
+
     protected function getHeaderActions(): array
     {
         return [
@@ -200,6 +220,13 @@ class MasterRoutineReport extends Page
                 ->icon(Heroicon::OutlinedArrowDownTray)
                 ->color('success')
                 ->action('download')
+                ->disabled(fn (): bool => ! $this->hasResults),
+
+            Action::make('downloadExcel')
+                ->label('Download Excel')
+                ->icon(Heroicon::OutlinedTableCells)
+                ->color('info')
+                ->action('downloadExcel')
                 ->disabled(fn (): bool => ! $this->hasResults),
         ];
     }

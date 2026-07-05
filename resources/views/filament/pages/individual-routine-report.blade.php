@@ -7,38 +7,103 @@
     </form>
 
     @if($this->hasResults)
-        <div style="margin-top: 2rem; overflow-x: auto;">
-            <table style="font-size: 11px; border-collapse: collapse; width: 100%;">
+        <div style="margin-top: 1rem; padding: 8px 12px; background: #e8f0fe; border-left: 4px solid #1a237e; border-radius: 4px; font-size: 13px; font-weight: bold; color: #1a237e;">
+            {{ $this->teacherName }}
+            @if($this->teacherDept)
+                <span style="font-size: 11px; color: #555; font-weight: normal; margin-left: 8px;">({{ $this->teacherDept }})</span>
+            @endif
+        </div>
+
+        <div style="margin-top: 1rem; overflow-x: auto;">
+            <table style="border-collapse: collapse; width: 100%; font-size: 11px; font-family: Arial, sans-serif;">
                 <thead>
+                    {{-- Row 1: Time | Day | Day names --}}
                     <tr>
-                        <th style="padding: 8px 10px; background: #1e40af; color: white; text-align: left; border: 1px solid #1e3a8a; white-space: nowrap; min-width: 140px;">
-                            Teacher
-                        </th>
+                        <th style="border: 1px solid #aaa; padding: 4px 6px; background: #ffff00; color: #000; font-weight: bold; white-space: nowrap;">Time</th>
+                        <th style="border: 1px solid #aaa; border-right: 2px solid #777; padding: 4px 6px; background: #ffff00; color: #000; font-weight: bold; white-space: nowrap;">Day</th>
+                        @foreach($this->days as $dayIndex => $dayName)
+                            <th colspan="{{ count($this->timeSlots) }}"
+                                style="border: 1px solid #aaa; border-right: 2px solid #777; padding: 4px 6px; background: #1a237e; color: #fff; font-weight: bold; text-align: center;">
+                                {{ $dayName }}
+                            </th>
+                        @endforeach
+                    </tr>
+
+                    {{-- Row 2: Department | Period | Period numbers --}}
+                    <tr>
+                        <th style="border: 1px solid #aaa; padding: 4px 6px; background: #ffff00; color: #000; font-weight: bold; white-space: nowrap;">Department</th>
+                        <th style="border: 1px solid #aaa; border-right: 2px solid #777; padding: 4px 6px; background: #ffff00; color: #000; font-weight: bold; white-space: nowrap;">Period</th>
                         @foreach($this->days as $dayIndex => $dayName)
                             @foreach($this->timeSlots as $ts)
-                                <th style="padding: 4px 6px; background: #166534; color: white; text-align: center; border: 1px solid #14532d; font-size: 9px; white-space: nowrap; min-width: 70px;">
-                                    <div style="font-weight: bold;">{{ substr($dayName, 0, 3) }}</div>
-                                    <div style="font-weight: normal; font-size: 8px;">{{ $ts->name }}</div>
+                                <th style="border: 1px solid #aaa; {{ $loop->last ? 'border-right: 2px solid #777;' : '' }}
+                                           padding: 3px 5px; font-weight: bold; text-align: center;
+                                           background: {{ $loop->iteration % 2 === 1 ? '#ffff00' : '#ffa500' }}; color: #000;">
+                                    {{ $loop->iteration }}
+                                </th>
+                            @endforeach
+                        @endforeach
+                    </tr>
+
+                    {{-- Row 3: (empty) | Semester | Time ranges --}}
+                    <tr>
+                        <th style="border: 1px solid #aaa; padding: 4px 6px; background: #ffff00;"></th>
+                        <th style="border: 1px solid #aaa; border-right: 2px solid #777; padding: 4px 6px; background: #ffff00; color: #000; font-weight: bold; white-space: nowrap;">Semester</th>
+                        @foreach($this->days as $dayIndex => $dayName)
+                            @foreach($this->timeSlots as $ts)
+                                <th style="border: 1px solid #aaa; {{ $loop->last ? 'border-right: 2px solid #777;' : '' }}
+                                           padding: 3px 4px; background: #ffff00; color: #000; font-size: 9px; font-weight: normal; white-space: nowrap;">
+                                    {{ \Carbon\Carbon::parse($ts->start_time)->format('H:i') }}–{{ \Carbon\Carbon::parse($ts->end_time)->format('H:i') }}
                                 </th>
                             @endforeach
                         @endforeach
                     </tr>
                 </thead>
+
                 <tbody>
-                    @foreach($this->teacherRows as $teacherId => $row)
-                        <tr style="background: {{ $loop->even ? '#f8fafc' : 'white' }};">
-                            <td style="padding: 6px 10px; border: 1px solid #cbd5e1; vertical-align: middle;">
-                                <div style="font-weight: bold; font-size: 12px;">{{ $row['short'] }}</div>
-                                <div style="color: #64748b; font-size: 10px;">{{ $row['name'] }}</div>
-                                <div style="color: #3b82f6; font-size: 10px; font-weight: bold;">{{ $row['dept_code'] }}</div>
+                    @php $prevDept = null; @endphp
+                    @foreach($this->reportRows as $key => $row)
+                        @php
+                            $isNewDept = $row['dept_name'] !== $prevDept;
+                            $deptTop   = $isNewDept ? 'border-top: 2px solid #777;' : '';
+                        @endphp
+                        <tr>
+                            @if($isNewDept)
+                                @php
+                                    $deptRowCount = collect($this->reportRows)->where('dept_name', $row['dept_name'])->count();
+                                    $prevDept = $row['dept_name'];
+                                @endphp
+                                <td rowspan="{{ $deptRowCount }}"
+                                    style="border: 1px solid #aaa; {{ $deptTop }} padding: 6px 8px; background: #c5cae9; color: #1a237e;
+                                           font-weight: bold; text-align: left; vertical-align: middle; white-space: nowrap;">
+                                    {{ $row['dept_name'] }}
+                                </td>
+                            @endif
+
+                            <td style="border: 1px solid #aaa; border-right: 2px solid #777; {{ $deptTop }} padding: 4px 6px; background: #ffa500; color: #000; font-weight: bold; text-align: center;">
+                                {{ $row['semester'] }}
                             </td>
+
                             @foreach($this->days as $dayIndex => $dayName)
+                                @php $skipCount = 0; @endphp
                                 @foreach($this->timeSlots as $ts)
-                                    @php $cell = $row['slots'][$dayIndex][$ts->id] ?? null; @endphp
-                                    <td style="padding: 4px 6px; border: 1px solid #cbd5e1; text-align: center; vertical-align: middle; font-size: 10px;">
+                                    @if($skipCount > 0)
+                                        @php $skipCount--; @endphp
+                                        @continue
+                                    @endif
+                                    @php
+                                        $cell = $row['slots'][$dayIndex][$ts->id] ?? null;
+                                        $span = $cell ? ($cell['lab_span'] ?? 1) : 1;
+                                        if ($span > 1) { $skipCount = $span - 1; }
+                                        $isLastSlot = $loop->remaining < $span;
+                                    @endphp
+                                    <td colspan="{{ $span }}"
+                                        style="border: 1px solid #aaa;
+                                               {{ $isLastSlot ? 'border-right: 2px solid #777;' : '' }}
+                                               {{ $deptTop }}
+                                               {{ $span > 1 ? 'background: #fff3e0;' : '' }}
+                                               padding: 3px 4px; text-align: center; vertical-align: middle;">
                                         @if($cell)
-                                            <div style="font-weight: bold; color: #1d4ed8;">{{ $cell['course_code'] }}</div>
-                                            <div style="color: #64748b; font-size: 9px;">{{ $cell['dept_code'] }} S{{ $cell['semester'] }}</div>
+                                            <div style="font-weight: bold; font-size: 10px;">{{ $cell['course_code'] }}</div>
                                         @endif
                                     </td>
                                 @endforeach

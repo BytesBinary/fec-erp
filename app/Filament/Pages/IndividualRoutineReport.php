@@ -2,10 +2,9 @@
 
 namespace App\Filament\Pages;
 
-use App\Models\Batch;
-use App\Models\Department;
 use App\Models\InstitutionSetting;
 use App\Models\RoutineSlot;
+use App\Models\Teacher;
 use App\Models\TimeSlot;
 use BackedEnum;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -16,6 +15,7 @@ use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use UnitEnum;
 
 class IndividualRoutineReport extends Page
@@ -42,11 +42,17 @@ class IndividualRoutineReport extends Page
     public array $days = RoutineSlot::DAYS;
 
     /**
-     * Teacher-keyed rows: [teacher_id] => {name, short, dept_code, slots: [day][time_slot_id] => {course_code, dept_code, semester}}
+     * Same structure as MasterRoutineReport::$reportRows, filtered to one teacher.
      *
-     * @var array<int, array{name: string, short: string, dept_code: string, slots: array<int, array<int, array{course_code: string, dept_code: string, semester: int}>>}>
+     * @var array<string, array{dept_name: string, dept_code: string, semester: int, slots: array<int, array<int, array{course_code: string, teacher_short: string, lab_span: int}>>}>
      */
-    public array $teacherRows = [];
+    public array $reportRows = [];
+
+    public string $teacherName = '';
+
+    public string $teacherShort = '';
+
+    public string $teacherDept = '';
 
     public bool $hasResults = false;
 
@@ -60,35 +66,22 @@ class IndividualRoutineReport extends Page
     {
         return $schema
             ->components([
-                Section::make('Filters')
-                    ->columns(2)
+                Section::make('Select Teacher')
                     ->schema([
-                        Select::make('department_ids')
-                            ->label('Departments')
-                            ->multiple()
-                            ->options(
-                                Department::where('is_active', true)
-                                    ->orderBy('name')
-                                    ->pluck('name', 'id')
-                                    ->toArray()
-                            )
-                            ->placeholder('All departments'),
-
-                        Select::make('batch_ids')
-                            ->label('Batches (optional)')
-                            ->multiple()
+                        Select::make('teacher_id')
+                            ->label('Teacher')
+                            ->searchable()
+                            ->required()
                             ->options(function (): array {
-                                return Batch::where('is_archived', false)
-                                    ->where('is_active', true)
-                                    ->with('department')
-                                    ->orderBy('batch_number')
+                                return Teacher::with(['user', 'department'])
                                     ->get()
-                                    ->mapWithKeys(fn (Batch $b) => [
-                                        $b->id => "{$b->department->code} — Batch {$b->batch_number} (Sem {$b->current_semester})",
+                                    ->sortBy('user.name')
+                                    ->mapWithKeys(fn (Teacher $t) => [
+                                        $t->id => $t->user->name.($t->short_name ? ' ('.$t->short_name.')' : ''),
                                     ])
                                     ->toArray();
                             })
-                            ->placeholder('All active batches'),
+                            ->placeholder('Search teacher name...'),
                     ]),
             ])
             ->statePath('data');
@@ -97,81 +90,111 @@ class IndividualRoutineReport extends Page
     public function generate(): void
     {
         $state = $this->form->getState();
-        $batchIds = $state['batch_ids'] ?? [];
-        $departmentIds = $state['department_ids'] ?? [];
+        $teacherId = $state['teacher_id'] ?? null;
 
-        $batchQuery = Batch::where('is_archived', false)->where('is_active', true);
-
-        if (! empty($batchIds)) {
-            $batchQuery->whereIn('id', $batchIds);
-        }
-
-        if (! empty($departmentIds)) {
-            $batchQuery->whereIn('department_id', $departmentIds);
-        }
-
-        $activeBatchIds = $batchQuery->pluck('id')->toArray();
-
-        if (empty($activeBatchIds)) {
-            Notification::make()->warning()->title('No active batches found.')->send();
-            $this->hasResults = false;
+        if (! $teacherId) {
+            Notification::make()->warning()->title('Select a teacher first.')->send();
 
             return;
         }
 
-        $slots = RoutineSlot::whereIn('batch_id', $activeBatchIds)
+        $teacher = Teacher::with(['user', 'department'])->find($teacherId);
+
+        if (! $teacher) {
+            Notification::make()->warning()->title('Teacher not found.')->send();
+
+            return;
+        }
+
+        $this->teacherName = $teacher->user->name;
+        $this->teacherShort = $teacher->short_name ?? $teacher->user->name;
+        $this->teacherDept = $teacher->department->code ?? '';
+
+        $slots = RoutineSlot::where('teacher_id', $teacherId)
             ->where('is_lab_continuation', false)
-            ->with(['course', 'teacher.user', 'teacher.department', 'timeSlot', 'batch.department'])
+            ->with(['course', 'teacher', 'timeSlot', 'batch.department'])
             ->get();
 
-        $this->teacherRows = [];
+        $this->reportRows = [];
 
         foreach ($slots as $slot) {
-            $teacherId = $slot->teacher_id;
-            $teacher = $slot->teacher;
+            $key = "{$slot->batch->department_id}|{$slot->semester_number}";
 
-            if (! isset($this->teacherRows[$teacherId])) {
-                $this->teacherRows[$teacherId] = [
-                    'name' => $teacher->user->name,
-                    'short' => $teacher->short_name ?? $teacher->user->name,
-                    'dept_code' => $teacher->department->code ?? '',
+            if (! isset($this->reportRows[$key])) {
+                $this->reportRows[$key] = [
+                    'dept_name' => $slot->batch->department->name,
+                    'dept_code' => $slot->batch->department->code,
+                    'semester' => $slot->semester_number,
                     'slots' => [],
                 ];
             }
 
-            $this->teacherRows[$teacherId]['slots'][$slot->day_of_week][$slot->time_slot_id] = [
+            $labSpan = $slot->slot_group_id
+                ? RoutineSlot::where('slot_group_id', $slot->slot_group_id)->count()
+                : 1;
+
+            $this->reportRows[$key]['slots'][$slot->day_of_week][$slot->time_slot_id] = [
                 'course_code' => $slot->course->code,
-                'dept_code' => $slot->batch->department->code,
-                'semester' => $slot->semester_number,
+                'teacher_short' => $this->teacherShort,
+                'lab_span' => $labSpan,
             ];
         }
 
-        // Sort by teacher name
-        uasort($this->teacherRows, fn ($a, $b) => $a['name'] <=> $b['name']);
+        // Sort: department name, then semester
+        uasort($this->reportRows, fn ($a, $b) => $a['dept_name'] <=> $b['dept_name'] ?: $a['semester'] <=> $b['semester']);
 
-        $this->hasResults = ! empty($this->teacherRows);
+        $this->hasResults = ! empty($this->reportRows);
 
         if (! $this->hasResults) {
-            Notification::make()->warning()->title('No routine assignments found.')->send();
+            Notification::make()->warning()->title('No routine assignments found for this teacher.')->send();
         }
     }
 
-    public function download(): \Symfony\Component\HttpFoundation\StreamedResponse
+    public function download(): StreamedResponse
     {
         if (! $this->hasResults) {
             Notification::make()->warning()->title('Generate the report first.')->send();
         }
 
         $pdf = Pdf::loadView('filament.routine.individual-routine-pdf', [
-            'teacherRows' => $this->teacherRows,
+            'reportRows' => $this->reportRows,
             'timeSlots' => $this->timeSlots,
             'days' => $this->days,
             'setting' => InstitutionSetting::current(),
+            'teacherName' => $this->teacherName,
+            'teacherShort' => $this->teacherShort,
+            'teacherDept' => $this->teacherDept,
         ])->setPaper('a3', 'landscape');
+
+        $filename = 'routine-'.str($this->teacherShort)->slug().'-'.now()->format('Y-m-d').'.pdf';
 
         return response()->streamDownload(
             fn () => print ($pdf->output()),
-            'individual-routine-'.now()->format('Y-m-d').'.pdf',
+            $filename,
+        );
+    }
+
+    public function downloadExcel(): StreamedResponse
+    {
+        if (! $this->hasResults) {
+            Notification::make()->warning()->title('Generate the report first.')->send();
+        }
+
+        $xml = view('filament.routine.individual-routine-excel', [
+            'reportRows' => $this->reportRows,
+            'timeSlots' => $this->timeSlots,
+            'days' => $this->days,
+            'teacherName' => $this->teacherName,
+            'teacherShort' => $this->teacherShort,
+            'teacherDept' => $this->teacherDept,
+        ])->render();
+
+        $filename = 'routine-'.str($this->teacherShort)->slug().'-'.now()->format('Y-m-d').'.xls';
+
+        return response()->streamDownload(
+            fn () => print ($xml),
+            $filename,
+            ['Content-Type' => 'application/vnd.ms-excel; charset=utf-8'],
         );
     }
 
@@ -183,6 +206,13 @@ class IndividualRoutineReport extends Page
                 ->icon(Heroicon::OutlinedArrowDownTray)
                 ->color('success')
                 ->action('download')
+                ->disabled(fn (): bool => ! $this->hasResults),
+
+            Action::make('downloadExcel')
+                ->label('Download Excel')
+                ->icon(Heroicon::OutlinedTableCells)
+                ->color('info')
+                ->action('downloadExcel')
                 ->disabled(fn (): bool => ! $this->hasResults),
         ];
     }

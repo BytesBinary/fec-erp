@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\CourseType;
+use Database\Factories\CourseFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,7 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Course extends Model
 {
-    /** @use HasFactory<\Database\Factories\CourseFactory> */
+    /** @use HasFactory<CourseFactory> */
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
@@ -33,10 +34,14 @@ class Course extends Model
         $this->attributes['code'] = strtoupper($value);
     }
 
-    /** Effective classes per week (default 1 if not explicitly set). */
+    /** Effective classes per week: explicit override wins; labs default to 1; theory defaults to round(credit_hours). */
     public function getEffectiveWeeklyClassesAttribute(): int
     {
-        return $this->weekly_classes ?? 1;
+        if ($this->weekly_classes !== null) {
+            return $this->weekly_classes;
+        }
+
+        return $this->type === CourseType::Lab ? 1 : (int) round($this->credit_hours);
     }
 
     public function department(): BelongsTo

@@ -38,7 +38,7 @@ class BatchDetail extends Page
 
     public function getTitle(): string
     {
-        return "Batch {$this->batchNumber}";
+        return isset($this->batchNumber) ? "Batch {$this->batchNumber}" : 'Batch Detail';
     }
 
     private function loadRows(): void

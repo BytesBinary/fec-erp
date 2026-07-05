@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Auth\EditProfile;
 use App\Models\InstitutionSetting;
 use Filament\Enums\ThemeMode;
 use Filament\Http\Middleware\Authenticate;
@@ -41,6 +42,7 @@ class ErpPanelProvider extends PanelProvider
             ->id('erp')
             ->path('/')
             ->login()
+            ->profile(EditProfile::class, isSimple: false)
             ->colors([
                 'primary' => Color::Default,
             ])
@@ -84,7 +86,6 @@ class ErpPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
-            ->plugins([
-            ]);
+            ->plugins([]);
     }
 }

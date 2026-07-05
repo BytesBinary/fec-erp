@@ -48,9 +48,14 @@ class RoutineGeneratorService
         /** @var array<int, array<int, bool>> $courseDay */
         $courseDay = [];
 
+        $days = [0, 1, 2, 3, 4];
+
+        // Day load tracker: how many classes this batch has per day this run
+        /** @var array<int, int> $batchDayLoad */
+        $batchDayLoad = array_fill_keys($days, 0);
+
         $scheduled = 0;
         $skipped = [];
-        $days = [0, 1, 2, 3, 4];
 
         foreach ($courses as $course) {
             if ($course->teachers->isEmpty()) {
@@ -59,64 +64,67 @@ class RoutineGeneratorService
                 continue;
             }
 
-            $target = $course->weekly_classes ?? (int) ceil($course->credit_hours) ?? 1;
+            $target = $course->effective_weekly_classes;
             $slots = $course->type === CourseType::Lab ? $labSlots : $theorySlots;
             $classesScheduled = 0;
 
-            $shuffledDays = $days;
-            shuffle($shuffledDays);
+            // Schedule one class at a time, always preferring least-loaded day
+            for ($i = 0; $i < $target; $i++) {
+                $sortedDays = $days;
+                usort($sortedDays, fn ($a, $b) => $batchDayLoad[$a] <=> $batchDayLoad[$b]);
 
-            foreach ($shuffledDays as $day) {
-                if ($classesScheduled >= $target) {
-                    break;
-                }
+                $placed = false;
 
-                $shuffledSlots = $slots->shuffle();
-
-                foreach ($shuffledSlots as $slot) {
-                    if ($classesScheduled >= $target) {
-                        break;
-                    }
-
-                    // Skip if batch is busy at this slot
-                    if (isset($batchBusy[$day][$slot->id])) {
-                        continue;
-                    }
-
+                foreach ($sortedDays as $day) {
                     // For theory courses: avoid scheduling same course twice on same day
                     if ($course->type === CourseType::Theory && isset($courseDay[$course->id][$day])) {
                         continue;
                     }
 
-                    // Find first free teacher
-                    $assignedTeacher = null;
-
-                    foreach ($course->teachers as $teacher) {
-                        if (! isset($teacherBusy[$teacher->id][$day][$slot->id])) {
-                            $assignedTeacher = $teacher;
-                            break;
+                    foreach ($slots as $slot) {
+                        // Skip if batch is busy at this slot
+                        if (isset($batchBusy[$day][$slot->id])) {
+                            continue;
                         }
+
+                        // Find first free teacher
+                        $assignedTeacher = null;
+
+                        foreach ($course->teachers as $teacher) {
+                            if (! isset($teacherBusy[$teacher->id][$day][$slot->id])) {
+                                $assignedTeacher = $teacher;
+                                break;
+                            }
+                        }
+
+                        if (! $assignedTeacher) {
+                            continue;
+                        }
+
+                        RoutineSlot::create([
+                            'department_id' => $batch->department_id,
+                            'batch_id' => $batch->id,
+                            'semester_number' => $batch->current_semester,
+                            'day_of_week' => $day,
+                            'time_slot_id' => $slot->id,
+                            'course_id' => $course->id,
+                            'teacher_id' => $assignedTeacher->id,
+                        ]);
+
+                        $teacherBusy[$assignedTeacher->id][$day][$slot->id] = true;
+                        $batchBusy[$day][$slot->id] = true;
+                        $courseDay[$course->id][$day] = true;
+                        $batchDayLoad[$day]++;
+                        $classesScheduled++;
+                        $scheduled++;
+                        $placed = true;
+
+                        break 2; // Move to next class for this course
                     }
+                }
 
-                    if (! $assignedTeacher) {
-                        continue;
-                    }
-
-                    RoutineSlot::create([
-                        'department_id' => $batch->department_id,
-                        'batch_id' => $batch->id,
-                        'semester_number' => $batch->current_semester,
-                        'day_of_week' => $day,
-                        'time_slot_id' => $slot->id,
-                        'course_id' => $course->id,
-                        'teacher_id' => $assignedTeacher->id,
-                    ]);
-
-                    $teacherBusy[$assignedTeacher->id][$day][$slot->id] = true;
-                    $batchBusy[$day][$slot->id] = true;
-                    $courseDay[$course->id][$day] = true;
-                    $classesScheduled++;
-                    $scheduled++;
+                if (! $placed) {
+                    break;
                 }
             }
 
