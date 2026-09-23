@@ -4,6 +4,7 @@ namespace App\Providers\Filament;
 
 use App\Filament\Pages\Auth\EditProfile;
 use App\Models\InstitutionSetting;
+use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Enums\ThemeMode;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -13,6 +14,7 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Assets\Css;
+use Filament\Support\Colors\Color;
 use Filament\Support\Facades\FilamentAsset;
 use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
@@ -23,7 +25,6 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
-use Openplain\FilamentShadcnTheme\Color;
 
 class ErpPanelProvider extends PanelProvider
 {
@@ -41,11 +42,15 @@ class ErpPanelProvider extends PanelProvider
             ->default()
             ->id('erp')
             ->path('/')
+            ->viteTheme('resources/css/filament/erp/theme.css')
             ->login()
             ->profile(EditProfile::class, isSimple: false)
             ->colors([
-                'primary' => Color::Default,
+                'primary' => Color::hex('#C1652F'),
+                'gray' => Color::Stone,
             ])
+            ->font('Inter')
+            ->serifFont('Newsreader')
             ->defaultThemeMode(ThemeMode::Light)
             ->navigationGroups([
                 'People',
@@ -83,9 +88,11 @@ class ErpPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
             ])
+            ->plugins([
+                FilamentShieldPlugin::make(),
+            ])
             ->authMiddleware([
                 Authenticate::class,
-            ])
-            ->plugins([]);
+            ]);
     }
 }

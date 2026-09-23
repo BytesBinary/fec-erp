@@ -16,10 +16,13 @@ class DesignationSeeder extends Seeder
             ['name' => 'Assistant Professor', 'short_name' => 'Asst. Prof.', 'type' => DesignationType::Teacher],
             ['name' => 'Lecturer', 'short_name' => 'Lec.', 'type' => DesignationType::Teacher],
             ['name' => 'Lab Instructor', 'short_name' => 'Lab. Ins.', 'type' => DesignationType::Teacher],
+            ['name' => 'Department Head', 'short_name' => 'Dept. Head', 'type' => DesignationType::Teacher],
 
             // Staff designations
             ['name' => 'Principal', 'short_name' => 'Principal', 'type' => DesignationType::Teacher],
             ['name' => 'Vice Principal', 'short_name' => 'V. Principal', 'type' => DesignationType::Teacher],
+            ['name' => 'Librarian', 'short_name' => 'Librarian', 'type' => DesignationType::Staff],
+            ['name' => 'Hall Provost', 'short_name' => 'Provost', 'type' => DesignationType::Staff],
         ];
 
         foreach ($designations as $designation) {

@@ -8,63 +8,63 @@
 }
 
 .routine-table thead tr {
-    background-color: #f9fafb;
+    background-color: #f5f5f4;
 }
 
 .dark .routine-table thead tr {
-    background-color: #1f2937;
+    background-color: #292524;
 }
 
 .routine-header-cell {
     padding: 0.75rem;
     font-weight: 600;
-    color: #374151;
-    border-bottom: 1px solid #e5e7eb;
+    color: #44403c;
+    border-bottom: 1px solid #e7e5e4;
 }
 
 .dark .routine-header-cell {
-    color: #e5e7eb;
-    border-bottom-color: #374151;
+    color: #e7e5e4;
+    border-bottom-color: #44403c;
 }
 
 .routine-header-cell--day {
     text-align: center;
-    border-left: 1px solid #e5e7eb;
+    border-left: 1px solid #e7e5e4;
     min-width: 10rem;
 }
 
 .dark .routine-header-cell--day {
-    border-left-color: #374151;
+    border-left-color: #44403c;
 }
 
 .routine-row {
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid #e7e5e4;
 }
 
 .dark .routine-row {
-    border-bottom-color: #374151;
+    border-bottom-color: #44403c;
 }
 
 .routine-row:hover {
-    background-color: #f9fafb;
+    background-color: #f5f5f4;
 }
 
 .dark .routine-row:hover {
-    background-color: rgba(31, 41, 55, 0.5);
+    background-color: rgba(41, 37, 36, 0.5);
 }
 
 .slot-label-cell {
     padding: 0.75rem;
-    color: #4b5563;
-    background-color: #f9fafb;
-    border-right: 1px solid #e5e7eb;
+    color: #57534e;
+    background-color: #f5f5f4;
+    border-right: 1px solid #e7e5e4;
     vertical-align: top;
 }
 
 .dark .slot-label-cell {
-    color: #d1d5db;
-    background-color: #1f2937;
-    border-right-color: #374151;
+    color: #d6d3d1;
+    background-color: #292524;
+    border-right-color: #44403c;
 }
 
 .slot-label-name {
@@ -74,7 +74,7 @@
 
 .slot-label-time {
     font-size: 0.75rem;
-    color: #9ca3af;
+    color: #a8a29e;
 }
 
 .slot-type-badge {
@@ -87,81 +87,81 @@
 }
 
 .slot-type-badge--theory {
-    background-color: #dbeafe;
-    color: #1d4ed8;
+    background-color: #dce8de;
+    color: #1f3d2e;
 }
 
 .slot-type-badge--lab {
-    background-color: #fef3c7;
-    color: #b45309;
+    background-color: #f6e3d2;
+    color: #8a431c;
 }
 
 .routine-cell {
     padding: 0.5rem;
-    border-left: 1px solid #e5e7eb;
+    border-left: 1px solid #e7e5e4;
     vertical-align: top;
 }
 
 .dark .routine-cell {
-    border-left-color: #374151;
+    border-left-color: #44403c;
 }
 
 .routine-cell--assigned-theory {
     border-radius: 0.5rem;
     padding: 0.5rem;
     text-align: center;
-    background-color: #eff6ff;
-    border: 1px solid #bfdbfe;
+    background-color: #eaf1ea;
+    border: 1px solid #bfd8c4;
 }
 
 .dark .routine-cell--assigned-theory {
-    background-color: rgba(29, 78, 216, 0.2);
-    border-color: #1d4ed8;
+    background-color: rgba(31, 61, 46, 0.35);
+    border-color: #3f6b4e;
 }
 
 .routine-cell--assigned-lab {
     border-radius: 0.5rem;
     padding: 0.5rem;
     text-align: center;
-    background-color: #fffbeb;
-    border: 1px solid #fde68a;
+    background-color: #fbf1e7;
+    border: 1px solid #e9c79c;
 }
 
 .dark .routine-cell--assigned-lab {
-    background-color: rgba(180, 83, 9, 0.2);
-    border-color: #b45309;
+    background-color: rgba(193, 101, 47, 0.25);
+    border-color: #c1652f;
 }
 
 .assigned-course-code {
     font-weight: 700;
     font-size: 0.75rem;
-    color: #1f2937;
+    color: #292524;
 }
 
 .dark .assigned-course-code {
-    color: #e5e7eb;
+    color: #e7e5e4;
 }
 
 .assigned-course-name {
     font-size: 0.75rem;
-    color: #4b5563;
+    color: #57534e;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
 .dark .assigned-course-name {
-    color: #9ca3af;
+    color: #a8a29e;
 }
 
 .assigned-teacher {
     font-size: 0.75rem;
     font-weight: 500;
-    color: #6b7280;
+    color: #78716c;
 }
 
 .dark .assigned-teacher {
-    color: #9ca3af;
+    color: #a8a29e;
 }
 
 .slot-remove-btn {
@@ -190,53 +190,53 @@
 .slot-empty {
     font-size: 0.75rem;
     text-align: center;
-    color: #9ca3af;
+    color: #a8a29e;
     padding: 0.5rem;
     font-style: italic;
 }
 
 .dark .slot-empty {
-    color: #6b7280;
+    color: #78716c;
 }
 
 .slot-select {
     width: 100%;
     font-size: 0.75rem;
     border-radius: 0.25rem;
-    border: 1px solid #d1d5db;
+    border: 1px solid #d6d3d1;
     background-color: #ffffff;
-    color: #374151;
+    color: #44403c;
     padding: 0.375rem 0.375rem;
     outline: none;
 }
 
 .slot-select:focus {
-    box-shadow: 0 0 0 1px #f59e0b;
-    border-color: #f59e0b;
+    box-shadow: 0 0 0 1px #c1652f;
+    border-color: #c1652f;
 }
 
 .routine-break-cell {
-    background-color: #f3f4f6;
+    background-color: #efece5;
     text-align: center;
-    color: #9ca3af;
+    color: #a8a29e;
     font-size: 0.75em;
     vertical-align: middle;
 }
 
 .dark .routine-break-cell {
-    background-color: rgba(31, 41, 55, 0.5);
-    color: #6b7280;
+    background-color: rgba(41, 37, 36, 0.5);
+    color: #78716c;
 }
 
 .routine-break-header {
-    background-color: #6b7280;
+    background-color: #78716c;
     min-width: 80px;
 }
 
 .dark .slot-select {
-    border-color: #4b5563;
-    background-color: #374151;
-    color: #e5e7eb;
+    border-color: #57534e;
+    background-color: #44403c;
+    color: #e7e5e4;
 }
 
 /* ── Mobile responsive ── */
@@ -257,11 +257,11 @@
     position: sticky;
     left: 0;
     z-index: 2;
-    background-color: #f9fafb;
+    background-color: #f5f5f4;
 }
 
 .dark .routine-header-cell:first-child {
-    background-color: #1f2937;
+    background-color: #292524;
 }
 
 @media (max-width: 768px) {

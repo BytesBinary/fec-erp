@@ -20,6 +20,8 @@ class TeacherSeeder extends Seeder
      */
     private array $teachers = [
         'CSE' => [
+            ['Dr. Abdul Kalam',        'principal@fec.edu.bd',         'ADM001', 'AK',  'Principal'],
+            ['Md. Kamrul Hasan',       'headcse@fec.edu.bd',            'CSE000', 'KH',  'Department Head'],
             ['Md. Suman Reza',        'suman.reza@fec.edu.bd',        'CSE001', 'MSR', 'Lecturer'],
             ['Md. Rasel Ahmed',        'rasel.ahmed@fec.edu.bd',       'CSE002', 'MRA', 'Lecturer'],
             ['Zannatun Naeem',         'zannatun.naeem@fec.edu.bd',    'CSE003', 'ZN',  'Lecturer'],
@@ -27,6 +29,7 @@ class TeacherSeeder extends Seeder
             ['Sameya Akter',           'sameya.akter@fec.edu.bd',      'CSE005', 'SA',  'Lecturer'],
         ],
         'EEE' => [
+            ['Nasrin Sultana',         'headeee@fec.edu.bd',            'EEE000', 'NS',  'Department Head'],
             ['Md. Zillur Rahman',      'zillur.rahman@fec.edu.bd',     'EEE001', 'MZR', 'Lecturer'],
             ['Md. Shah Jamal Molla',   'shahjamol.molla@fec.edu.bd',   'EEE002', 'MSJ', 'Lecturer'],
             ['Md. Rany Ahmed',         'rany.ahmed@fec.edu.bd',        'EEE003', 'MRA', 'Lecturer'],
@@ -34,6 +37,7 @@ class TeacherSeeder extends Seeder
             ['Afia Begum',             'afia.begum@fec.edu.bd',        'EEE005', 'AB',  'Lecturer'],
         ],
         'CE' => [
+            ['Mohammad Rafiqul Islam', 'headce@fec.edu.bd',             'CE000',  'MRI', 'Department Head'],
             ['Mohammad Shamsul Islam', 'shamsul.islam@fec.edu.bd',     'CE001',  'MSI', 'Lecturer'],
             ['Md. Tuhin Reza',         'tuhin.reza@fec.edu.bd',        'CE002',  'MTR', 'Lecturer'],
             ['Md. Ekhlas Uddin',       'ekhlas.uddin@fec.edu.bd',      'CE003',  'MEU', 'Lecturer'],
@@ -51,6 +55,17 @@ class TeacherSeeder extends Seeder
             ['Md. Shihab Uddin',       'shihab.uddin@fec.edu.bd',      'ETE003', 'MSU', 'Lecturer'],
             ['Md. Shohanur Rahman',    'shohanur.rahman@fec.edu.bd',   'ETE004', 'MSHR', 'Lecturer'],
         ],
+    ];
+
+    /**
+     * Designation name to Spatie role name. Designations not listed here
+     * (regular teaching designations) fall back to the base 'Teacher' role.
+     *
+     * @var array<string, string>
+     */
+    private const DESIGNATION_ROLES = [
+        'Principal' => 'Principal',
+        'Department Head' => 'Department Head',
     ];
 
     public function run(): void
@@ -87,6 +102,8 @@ class TeacherSeeder extends Seeder
                         'phone' => null,
                     ]
                 );
+
+                $user->syncRoles(self::DESIGNATION_ROLES[$designationName] ?? 'Teacher');
             }
         }
     }
