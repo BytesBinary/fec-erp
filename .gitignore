@@ -24,3 +24,5 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 .autopilot/logs/
+/tests/Browser/Screenshots
+/database/verify.sqlite

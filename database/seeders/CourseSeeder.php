@@ -7,6 +7,7 @@ use App\Models\Course;
 use App\Models\Department;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class CourseSeeder extends Seeder
 {
@@ -276,11 +277,11 @@ class CourseSeeder extends Seeder
     {
         // Replace placeholder course data with real curriculum data.
         // FK cascades handle routine_slots; disable checks to allow truncation order.
-        DB::statement('SET FOREIGN_KEY_CHECKS=0');
+        Schema::disableForeignKeyConstraints();
         DB::table('course_teacher')->truncate();
         DB::table('routine_slots')->truncate();
         DB::table('courses')->truncate();
-        DB::statement('SET FOREIGN_KEY_CHECKS=1');
+        Schema::enableForeignKeyConstraints();
 
         $departments = Department::pluck('id', 'code');
 
