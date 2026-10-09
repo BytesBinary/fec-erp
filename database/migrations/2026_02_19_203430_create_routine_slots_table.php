@@ -20,6 +20,8 @@ return new class extends Migration
             $table->foreignId('time_slot_id')->constrained()->cascadeOnDelete();
             $table->foreignId('course_id')->constrained()->cascadeOnDelete();
             $table->foreignId('teacher_id')->constrained()->cascadeOnDelete();
+            $table->char('slot_group_id', 26)->nullable();
+            $table->boolean('is_lab_continuation')->default(false);
             $table->timestamps();
 
             // A batch cannot have two classes at the same time

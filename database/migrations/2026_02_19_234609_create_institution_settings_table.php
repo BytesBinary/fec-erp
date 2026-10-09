@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('principal_name')->nullable();
             $table->string('principal_title')->nullable();
             $table->string('principal_signature_path')->nullable();
+            $table->boolean('enable_supervisor')->default(true);
             $table->timestamps();
         });
     }
