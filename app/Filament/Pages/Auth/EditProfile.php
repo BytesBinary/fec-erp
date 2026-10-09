@@ -3,7 +3,7 @@
 namespace App\Filament\Pages\Auth;
 
 use Filament\Auth\Pages\EditProfile as BaseEditProfile;
-use Filament\Forms\Components\Section;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
 class EditProfile extends BaseEditProfile
