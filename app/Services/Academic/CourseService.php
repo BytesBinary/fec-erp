@@ -11,7 +11,6 @@ use App\Services\Audit\AuditLogger;
 use App\Services\CrudService;
 use App\Support\Authorization\Authorizer;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 /**
@@ -103,7 +102,7 @@ class CourseService extends CrudService
 
         $this->authorizer->authorize($actor, $this->permission('archive'), $course);
 
-        $course->update(['is_active' => false]);
+        $this->write($actor, fn () => $course->update(['is_active' => false]));
 
         return $course->refresh();
     }
@@ -129,7 +128,7 @@ class CourseService extends CrudService
             ]);
         }
 
-        return DB::transaction(function () use ($course, $teacherIds): Course {
+        return $this->write($actor, function () use ($course, $teacherIds): Course {
             $before = $course->teachers()->pluck('teachers.id')->sort()->values()->all();
 
             $course->teachers()->sync($teacherIds);

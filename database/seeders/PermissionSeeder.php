@@ -11,37 +11,47 @@ use Spatie\Permission\PermissionRegistrar;
 
 /**
  * Seeds the permission catalog and the DEFAULT role → permission matrix from
- * config/erp.php. Idempotent and additive: it creates missing permissions and
- * roles and adds missing grants, but never revokes a grant an admin made.
+ * config/erp.php. Idempotent and never overrides an admin's edits:
+ *
+ *  - a role that has no permissions yet receives its full default set;
+ *  - a permission created in this run is granted to its default roles;
+ *  - everything else (grants an admin added or revoked later) is left alone.
  */
 class PermissionSeeder extends Seeder
 {
     public function run(PermissionCatalog $catalog): void
     {
-        foreach (array_keys($catalog->nativePermissions()) as $name) {
-            Permission::findOrCreate($name, 'web');
-        }
+        $existing = Permission::query()->where('guard_name', 'web')->pluck('name')->all();
 
-        foreach (array_unique(array_values($catalog->aliases())) as $physical) {
-            Permission::findOrCreate($physical, 'web');
+        $wanted = array_unique([...array_keys($catalog->nativePermissions()), ...array_values($catalog->aliases())]);
+
+        $created = array_values(array_diff($wanted, $existing));
+
+        foreach ($created as $name) {
+            Permission::query()->create(['name' => $name, 'guard_name' => 'web']);
         }
 
         foreach (RoleKey::values() as $roleKey) {
-            Role::findOrCreate($roleKey, 'web');
+            Role::query()->firstOrCreate(['name' => $roleKey, 'guard_name' => 'web']);
         }
 
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+
         foreach ($catalog->defaultMatrix() as $roleKey => $permissions) {
-            $role = Role::findByName($roleKey, 'web');
+            $role = Role::query()->where('name', $roleKey)->where('guard_name', 'web')->firstOrFail();
+            $granted = $role->permissions()->pluck('name')->all();
 
             $missing = collect($permissions)
                 ->map(fn (string $permission): string => $catalog->physicalName($permission))
                 ->unique()
-                ->reject(fn (string $physical): bool => $role->hasPermissionTo($physical))
-                ->values()
-                ->all();
+                ->when($granted !== [], fn ($names) => $names->intersect($created))
+                ->diff($granted)
+                ->values();
 
-            if ($missing !== []) {
-                $role->givePermissionTo($missing);
+            if ($missing->isNotEmpty()) {
+                $role->permissions()->attach(
+                    Permission::query()->where('guard_name', 'web')->whereIn('name', $missing)->pluck('id')->all()
+                );
             }
         }
 

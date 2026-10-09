@@ -71,17 +71,21 @@ return new class extends Migration
         app(PermissionRegistrar::class)->forgetCachedPermissions();
     }
 
+    /**
+     * Names are compared in PHP so case-insensitive MySQL collations do not
+     * mistake "Teacher" for "teacher".
+     */
     private function rename(string $from, string $to): void
     {
-        $targetExists = DB::table('roles')->where('name', $to)->where('guard_name', 'web')->exists();
+        $roles = DB::table('roles')->where('guard_name', 'web')->get(['id', 'name']);
 
-        if ($targetExists) {
+        $source = $roles->first(fn (object $role): bool => $role->name === $from);
+        $targetExists = $roles->contains(fn (object $role): bool => $role->name === $to);
+
+        if ($source === null || $targetExists) {
             return;
         }
 
-        DB::table('roles')
-            ->where('name', $from)
-            ->where('guard_name', 'web')
-            ->update(['name' => $to, 'updated_at' => now()]);
+        DB::table('roles')->where('id', $source->id)->update(['name' => $to, 'updated_at' => now()]);
     }
 };

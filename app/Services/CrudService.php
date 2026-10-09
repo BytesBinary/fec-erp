@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Exceptions\Domain\NotFoundException;
 use App\Exceptions\Domain\ValidationException;
 use App\Models\User;
+use App\Services\Audit\AuditLogger;
 use App\Support\Authorization\Authorizer;
 use Illuminate\Contracts\Pagination\CursorPaginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -134,7 +135,7 @@ abstract class CrudService
 
         $validated = $this->validate($data, null);
 
-        return DB::transaction(fn (): Model => $this->performCreate($actor, $validated));
+        return $this->write($actor, fn (): Model => $this->performCreate($actor, $validated));
     }
 
     /**
@@ -152,7 +153,7 @@ abstract class CrudService
 
         $this->authorizer->authorize($actor, $this->permission('update'), (clone $model)->fill($validated));
 
-        return DB::transaction(fn (): Model => $this->performUpdate($actor, $model, $validated));
+        return $this->write($actor, fn (): Model => $this->performUpdate($actor, $model, $validated));
     }
 
     /**
@@ -164,7 +165,7 @@ abstract class CrudService
 
         $this->authorizer->authorize($actor, $this->permission('delete'), $model);
 
-        DB::transaction(fn () => $model->delete());
+        $this->write($actor, fn () => $model->delete());
     }
 
     /**
@@ -178,10 +179,23 @@ abstract class CrudService
         $this->authorizer->authorize($actor, $this->permission('restore'), $model);
 
         if (in_array(SoftDeletes::class, class_uses_recursive($model), true)) {
-            $model->restore();
+            $this->write($actor, fn () => $model->restore());
         }
 
         return $model;
+    }
+
+    /**
+     * Run a write in a transaction, attributing audit rows to the actor.
+     *
+     * @template TReturn
+     *
+     * @param  \Closure(): TReturn  $callback
+     * @return TReturn
+     */
+    protected function write(User $actor, \Closure $callback): mixed
+    {
+        return app(AuditLogger::class)->as($actor, fn (): mixed => DB::transaction($callback));
     }
 
     public function permission(string $action): string

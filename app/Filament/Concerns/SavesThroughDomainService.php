@@ -2,9 +2,11 @@
 
 namespace App\Filament\Concerns;
 
+use App\Exceptions\Domain\ForbiddenException;
 use App\Exceptions\Domain\ValidationException as DomainValidationException;
 use App\Models\User;
 use App\Services\CrudService;
+use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
@@ -12,7 +14,9 @@ use Illuminate\Validation\ValidationException;
 /**
  * Makes a Filament Create/Edit page persist through the module's domain
  * service, so the web UI shares authorization, validation and audit logging
- * with MCP and the assistant. Domain validation errors are shown on the form.
+ * with MCP and the assistant. Domain validation errors are shown on the form;
+ * authorization failures (e.g. moving a record out of the user's scope) are
+ * shown as a notification and the save is halted.
  */
 trait SavesThroughDomainService
 {
@@ -50,6 +54,10 @@ trait SavesThroughDomainService
                 ->all();
 
             throw ValidationException::withMessages($messages ?: ['data' => [$exception->getMessage()]]);
+        } catch (ForbiddenException $exception) {
+            Notification::make()->danger()->title($exception->getMessage())->send();
+
+            $this->halt();
         }
     }
 

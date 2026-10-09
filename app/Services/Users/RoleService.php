@@ -72,7 +72,7 @@ class RoleService
         $scopeType = RoleKey::tryFrom($role->name)?->defaultScope() ?? ScopeType::Global;
         $scopeIds = $this->validateScopeIds($role, $scopeType, $scopeIds);
 
-        return DB::transaction(function () use ($user, $role, $scopeType, $scopeIds): User {
+        return $this->audit->as($actor, fn (): User => DB::transaction(function () use ($user, $role, $scopeType, $scopeIds): User {
             if (! $user->hasRole($role)) {
                 $user->assignRole($role);
             }
@@ -80,7 +80,7 @@ class RoleService
             $this->syncScopes($user, $role, $scopeType, $scopeIds);
 
             return $user->refresh()->load(['roles', 'roleScopes']);
-        });
+        }));
     }
 
     public function revoke(User $actor, User $user, string $roleName): User
@@ -94,12 +94,12 @@ class RoleService
             throw new ForbiddenException('You cannot remove your own super admin role.');
         }
 
-        return DB::transaction(function () use ($user, $role): User {
+        return $this->audit->as($actor, fn (): User => DB::transaction(function () use ($user, $role): User {
             $this->syncScopes($user, $role, ScopeType::Global, []);
             $user->removeRole($role);
 
             return $user->refresh()->load(['roles', 'roleScopes']);
-        });
+        }));
     }
 
     protected function findRole(string $roleName): Role

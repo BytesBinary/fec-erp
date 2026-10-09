@@ -80,7 +80,7 @@ class UserService extends CrudService
     {
         $validated = $this->validate(array_intersect_key($data, array_flip(['name', 'email'])), $actor);
 
-        $actor->update($validated);
+        $this->write($actor, fn () => $actor->update($validated));
 
         return $actor->refresh();
     }
@@ -95,7 +95,7 @@ class UserService extends CrudService
             throw new InvalidStateException('You cannot deactivate your own account.');
         }
 
-        $user->update(['is_active' => $active]);
+        $this->write($actor, fn () => $user->update(['is_active' => $active]));
 
         return $user->refresh();
     }

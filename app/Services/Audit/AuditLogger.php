@@ -19,6 +19,8 @@ class AuditLogger
 {
     protected bool $paused = false;
 
+    protected ?User $actorOverride = null;
+
     public function __construct(protected RequestContext $context) {}
 
     /**
@@ -54,6 +56,28 @@ class AuditLogger
             'integration_id' => $this->context->integrationId(),
             'created_at' => now(),
         ]);
+    }
+
+    /**
+     * Attribute every write inside the callback to `$actor` (services pass
+     * the acting user explicitly, so MCP/assistant/CLI writes are attributed
+     * even when there is no web session).
+     *
+     * @template TReturn
+     *
+     * @param  callable(): TReturn  $callback
+     * @return TReturn
+     */
+    public function as(User $actor, callable $callback): mixed
+    {
+        $previous = $this->actorOverride;
+        $this->actorOverride = $actor;
+
+        try {
+            return $callback();
+        } finally {
+            $this->actorOverride = $previous;
+        }
     }
 
     /**
@@ -119,6 +143,10 @@ class AuditLogger
 
     protected function currentActor(): ?User
     {
+        if ($this->actorOverride !== null) {
+            return $this->actorOverride;
+        }
+
         $user = Auth::user();
 
         return $user instanceof User ? $user : null;

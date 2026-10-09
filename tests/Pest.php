@@ -15,6 +15,10 @@ pest()->extend(Tests\TestCase::class)
     ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
     ->in('Feature');
 
+pest()->extend(Tests\TestCase::class)
+    ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
+    ->in('Unit/Authorization');
+
 pest()->extend(Tests\BrowserTestCase::class)
     ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
     ->in('Browser');
@@ -47,7 +51,23 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+/**
+ * Seed the deterministic `seed:test` dataset (spec §10.1).
+ */
+function seedTestDataset(): void
 {
-    // ..
+    test()->seed(Database\Seeders\Testing\TestSeeder::class);
+}
+
+/**
+ * A seeded account by e-mail (see Database\Seeders\Testing\TestDataset).
+ */
+function datasetUser(string $email): App\Models\User
+{
+    return App\Models\User::query()->where('email', $email)->firstOrFail();
+}
+
+function authorizer(): App\Support\Authorization\Authorizer
+{
+    return app(App\Support\Authorization\Authorizer::class);
 }

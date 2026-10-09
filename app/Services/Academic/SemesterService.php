@@ -6,7 +6,6 @@ use App\Models\Semester;
 use App\Models\User;
 use App\Services\CrudService;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 /**
@@ -53,7 +52,7 @@ class SemesterService extends CrudService
 
         $this->authorizer->authorize($actor, $this->permission('activate'), $semester);
 
-        return DB::transaction(function () use ($semester): Semester {
+        return $this->write($actor, function () use ($semester): Semester {
             Semester::query()
                 ->where('is_active', true)
                 ->whereKeyNot($semester->getKey())

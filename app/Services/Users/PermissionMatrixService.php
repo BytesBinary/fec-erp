@@ -7,6 +7,7 @@ use App\Exceptions\Domain\InvalidStateException;
 use App\Exceptions\Domain\NotFoundException;
 use App\Exceptions\Domain\ValidationException;
 use App\Models\User;
+use App\Services\Audit\AuditLogger;
 use App\Support\Authorization\Authorizer;
 use App\Support\Authorization\PermissionCatalog;
 use Illuminate\Support\Facades\DB;
@@ -20,7 +21,11 @@ use Spatie\Permission\Models\Role;
  */
 class PermissionMatrixService
 {
-    public function __construct(protected Authorizer $authorizer, protected PermissionCatalog $catalog) {}
+    public function __construct(
+        protected Authorizer $authorizer,
+        protected PermissionCatalog $catalog,
+        protected AuditLogger $audit,
+    ) {}
 
     /**
      * @return array<string, list<string>> role name → spec permission names
@@ -69,7 +74,7 @@ class PermissionMatrixService
             ]);
         }
 
-        DB::transaction(function () use ($role, $grant, $revoke): void {
+        $this->audit->as($actor, fn () => DB::transaction(function () use ($role, $grant, $revoke): void {
             $toGrant = array_map(fn (string $name): Permission => Permission::findOrCreate($this->catalog->physicalName($name), 'web'), $grant);
 
             if ($toGrant !== []) {
@@ -83,7 +88,7 @@ class PermissionMatrixService
                     $role->revokePermissionTo($physical);
                 }
             }
-        });
+        }));
 
         return $this->specNames($role->refresh()->permissions->pluck('name')->all());
     }

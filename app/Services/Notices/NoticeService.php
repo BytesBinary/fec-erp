@@ -82,10 +82,15 @@ class NoticeService extends CrudService
         return parent::create($actor, $data);
     }
 
+    /**
+     * New notices are published immediately unless `published_at` is given
+     * (a future date schedules it, null keeps it as a draft).
+     */
     protected function performCreate(User $actor, array $data): Model
     {
         return Notice::query()->create([
             'audience' => 'all',
+            'published_at' => now(),
             ...$data,
             'created_by' => $actor->id,
         ]);
