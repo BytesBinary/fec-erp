@@ -4,6 +4,7 @@ namespace App\Filament\Widgets;
 
 use App\Filament\Resources\Students\StudentResource;
 use App\Models\Student;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget;
@@ -11,6 +12,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class RecentStudents extends TableWidget
 {
+    use HasWidgetShield;
+
     protected static ?int $sort = 1;
 
     protected int|string|array $columnSpan = [

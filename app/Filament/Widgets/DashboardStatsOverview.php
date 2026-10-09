@@ -7,11 +7,14 @@ use App\Models\ExamDuty;
 use App\Models\Staff;
 use App\Models\Student;
 use App\Models\Teacher;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class DashboardStatsOverview extends StatsOverviewWidget
 {
+    use HasWidgetShield;
+
     protected static ?int $sort = -1;
 
     protected function getStats(): array

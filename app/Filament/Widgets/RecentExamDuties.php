@@ -5,6 +5,7 @@ namespace App\Filament\Widgets;
 use App\Filament\Resources\ExamDuties\ExamDutyResource;
 use App\Models\ExamDuty;
 use App\Models\ExamType;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget;
@@ -12,6 +13,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class RecentExamDuties extends TableWidget
 {
+    use HasWidgetShield;
+
     protected static ?int $sort = 1;
 
     protected int|string|array $columnSpan = [

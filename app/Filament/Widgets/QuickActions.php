@@ -7,10 +7,13 @@ use App\Filament\Resources\Routine\RoutineResource;
 use App\Filament\Resources\Staff\StaffResource;
 use App\Filament\Resources\Students\StudentResource;
 use App\Filament\Resources\Teachers\TeacherResource;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Widgets\Widget;
 
 class QuickActions extends Widget
 {
+    use HasWidgetShield;
+
     protected string $view = 'filament.widgets.quick-actions';
 
     protected static ?int $sort = 0;
