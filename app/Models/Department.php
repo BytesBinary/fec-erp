@@ -2,15 +2,18 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Auditable;
+use App\Support\Authorization\HasAuthorizationScope;
+use App\Support\Authorization\ResourceScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Department extends Model
+class Department extends Model implements HasAuthorizationScope
 {
     /** @use HasFactory<\Database\Factories\DepartmentFactory> */
-    use HasFactory, SoftDeletes;
+    use Auditable, HasFactory, SoftDeletes;
 
     protected $fillable = [
         'name',
@@ -42,6 +45,11 @@ class Department extends Model
     public function staff(): HasMany
     {
         return $this->hasMany(Staff::class);
+    }
+
+    public function authorizationScope(): ResourceScope
+    {
+        return ResourceScope::forDepartment($this->id);
     }
 
     protected function casts(): array

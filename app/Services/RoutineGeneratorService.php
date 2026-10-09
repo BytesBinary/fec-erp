@@ -7,15 +7,35 @@ use App\Models\Batch;
 use App\Models\Course;
 use App\Models\RoutineSlot;
 use App\Models\TimeSlot;
+use App\Services\Audit\AuditLogger;
 
 class RoutineGeneratorService
 {
+    public function __construct(protected AuditLogger $audit) {}
+
     /**
-     * Generate routine slots for a single batch's current semester.
+     * Generate routine slots for a single batch's current semester. Slot rows
+     * are not audited one by one; a single `routine.generated` entry is written.
      *
      * @return array{scheduled: int, skipped: list<string>}
      */
     public function generateForBatch(Batch $batch): array
+    {
+        $result = $this->audit->withoutAuditing(fn (): array => $this->buildForBatch($batch));
+
+        $this->audit->record('routine.generated', $batch, null, [
+            'semester_number' => $batch->current_semester,
+            'scheduled' => $result['scheduled'],
+            'skipped' => count($result['skipped']),
+        ]);
+
+        return $result;
+    }
+
+    /**
+     * @return array{scheduled: int, skipped: list<string>}
+     */
+    protected function buildForBatch(Batch $batch): array
     {
         $courses = Course::where('department_id', $batch->department_id)
             ->where('semester_number', $batch->current_semester)
@@ -152,13 +172,19 @@ class RoutineGeneratorService
         $allSkipped = [];
 
         foreach ($batches as $batch) {
-            $result = $this->generateForBatch($batch);
+            $result = $this->audit->withoutAuditing(fn (): array => $this->buildForBatch($batch));
             $totalScheduled += $result['scheduled'];
 
             foreach ($result['skipped'] as $message) {
                 $allSkipped[] = "[{$batch->department->code} B{$batch->batch_number}] {$message}";
             }
         }
+
+        $this->audit->record('routine.generated_all', null, null, [
+            'batches_processed' => $batches->count(),
+            'scheduled' => $totalScheduled,
+            'skipped' => count($allSkipped),
+        ]);
 
         return [
             'batches_processed' => $batches->count(),

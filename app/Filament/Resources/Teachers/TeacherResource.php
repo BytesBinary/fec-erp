@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Teachers;
 
+use App\Filament\Concerns\ScopesListToActor;
 use App\Filament\Resources\Teachers\Pages\CreateTeacher;
 use App\Filament\Resources\Teachers\Pages\EditTeacher;
 use App\Filament\Resources\Teachers\Pages\ListTeachers;
@@ -19,6 +20,8 @@ use UnitEnum;
 
 class TeacherResource extends Resource
 {
+    use ScopesListToActor;
+
     protected static ?string $model = Teacher::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedAcademicCap;
@@ -34,7 +37,8 @@ class TeacherResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return TeachersTable::configure($table);
+        return TeachersTable::configure($table)
+            ->modifyQueryUsing(fn (Builder $query): Builder => static::scopeListQuery($query));
     }
 
     public static function getRelations(): array
@@ -55,5 +59,10 @@ class TeacherResource extends Resource
             'create' => CreateTeacher::route('/create'),
             'edit' => EditTeacher::route('/{record}/edit'),
         ];
+    }
+
+    protected static function listPermission(): string
+    {
+        return 'teacher:list';
     }
 }

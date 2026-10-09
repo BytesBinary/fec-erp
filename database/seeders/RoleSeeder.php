@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\RoleKey;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -9,9 +10,12 @@ use Spatie\Permission\Models\Role;
 class RoleSeeder extends Seeder
 {
     /**
-     * Starting roles for this institution's ERP. These are a scaffold, not
-     * a final org chart — adjust permissions live via the Shield "Roles"
+     * Starting legacy roles for this institution's ERP. These are a scaffold,
+     * not a final org chart — adjust permissions live via the Shield "Roles"
      * page in the panel rather than editing this seeder after go-live.
+     *
+     * The RBAC roles (super_admin, admin_office, department_head, …) and their
+     * default permissions are seeded by PermissionSeeder from config/erp.php.
      *
      * @var array<string, list<string>>
      */
@@ -39,15 +43,6 @@ class RoleSeeder extends Seeder
         'Report Viewer' => [
             'View:MasterRoutineReport', 'View:IndividualRoutineReport', 'View:CreditCountReport', 'View:ExamDutyReport',
         ],
-
-        // User-facing roles below are created with no permissions on purpose —
-        // assign their access live via the Shield "Roles" page instead of here.
-        'Principal' => [],
-        'Department Head' => [],
-        'Teacher' => [],
-        'Student' => [],
-        'Librarian' => [],
-        'Hall Provost' => [],
     ];
 
     /**
@@ -55,6 +50,8 @@ class RoleSeeder extends Seeder
      */
     public function run(): void
     {
+        Role::findOrCreate(RoleKey::SuperAdmin->value, 'web');
+
         foreach (self::ROLES as $name => $permissions) {
             $role = Role::firstOrCreate(['name' => $name, 'guard_name' => 'web']);
 

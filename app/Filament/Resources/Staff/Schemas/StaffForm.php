@@ -30,7 +30,7 @@ class StaffForm
                             ->email()
                             ->required()
                             ->maxLength(255)
-                            ->unique(table: 'users', ignoreRecord: true)
+                            ->unique(table: 'users', ignorable: fn ($record) => $record?->user)
                             ->columnSpan(1),
                         TextInput::make('password')
                             ->password()

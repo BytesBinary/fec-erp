@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Batches;
 
+use App\Filament\Concerns\ScopesListToActor;
 use App\Filament\Resources\Batches\Pages\CreateBatch;
 use App\Filament\Resources\Batches\Pages\EditBatch;
 use App\Filament\Resources\Batches\Pages\ListBatches;
@@ -19,6 +20,8 @@ use UnitEnum;
 
 class BatchResource extends Resource
 {
+    use ScopesListToActor;
+
     protected static ?string $model = Batch::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserGroup;
@@ -34,7 +37,8 @@ class BatchResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return BatchesTable::configure($table);
+        return BatchesTable::configure($table)
+            ->modifyQueryUsing(fn (Builder $query): Builder => static::scopeListQuery($query));
     }
 
     public static function getRelations(): array
@@ -57,5 +61,15 @@ class BatchResource extends Resource
             'create' => CreateBatch::route('/create'),
             'edit' => EditBatch::route('/{record}/edit'),
         ];
+    }
+
+    protected static function listPermission(): string
+    {
+        return 'batch:list';
+    }
+
+    protected static function listScopeColumns(): array
+    {
+        return ['department' => 'department_id'];
     }
 }

@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Auditable;
+use App\Support\Authorization\HasAuthorizationScope;
+use App\Support\Authorization\ResourceScope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -9,10 +12,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Batch extends Model
+class Batch extends Model implements HasAuthorizationScope
 {
     /** @use HasFactory<\Database\Factories\BatchFactory> */
-    use HasFactory, SoftDeletes;
+    use Auditable, HasFactory, SoftDeletes;
 
     protected $fillable = [
         'department_id',
@@ -46,6 +49,11 @@ class Batch extends Model
     public function getDisplayNameAttribute(): string
     {
         return "Batch {$this->batch_number} ({$this->session})";
+    }
+
+    public function authorizationScope(): ResourceScope
+    {
+        return ResourceScope::forDepartment($this->department_id);
     }
 
     protected function casts(): array

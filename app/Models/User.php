@@ -3,19 +3,23 @@
 namespace App\Models;
 
 use App\Enums\ThemePreset;
+use App\Models\Concerns\Auditable;
+use App\Support\Authorization\HasAuthorizationScope;
+use App\Support\Authorization\ResourceScope;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable implements FilamentUser
+class User extends Authenticatable implements FilamentUser, HasAuthorizationScope
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, HasRoles, Notifiable, SoftDeletes;
+    use Auditable, HasFactory, HasRoles, Notifiable, SoftDeletes;
 
     /**
      * @var list<string>
@@ -24,6 +28,7 @@ class User extends Authenticatable implements FilamentUser
         'name',
         'email',
         'password',
+        'is_active',
         'theme',
         'theme_primary_color',
     ];
@@ -38,7 +43,22 @@ class User extends Authenticatable implements FilamentUser
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return $this->roles()->exists();
+        return $this->is_active !== false && $this->roles()->exists();
+    }
+
+    /**
+     * Scopes pinning this user's roles to departments, halls or courses.
+     */
+    public function roleScopes(): HasMany
+    {
+        return $this->hasMany(RoleScope::class);
+    }
+
+    public function authorizationScope(): ResourceScope
+    {
+        $departmentId = $this->student?->department_id ?? $this->teacher?->department_id ?? $this->staff?->department_id;
+
+        return ResourceScope::forOwner($this->id)->merge(ResourceScope::forDepartment($departmentId));
     }
 
     public function teacher(): HasOne
@@ -61,6 +81,7 @@ class User extends Authenticatable implements FilamentUser
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
             'theme' => ThemePreset::class,
         ];
     }

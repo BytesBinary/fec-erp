@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Auditable;
+use App\Support\Authorization\HasAuthorizationScope;
+use App\Support\Authorization\ResourceScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,10 +12,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Teacher extends Model
+class Teacher extends Model implements HasAuthorizationScope
 {
     /** @use HasFactory<\Database\Factories\TeacherFactory> */
-    use HasFactory, SoftDeletes;
+    use Auditable, HasFactory, SoftDeletes;
 
     protected $fillable = [
         'user_id',
@@ -47,6 +50,15 @@ class Teacher extends Model
     public function routineSlots(): HasMany
     {
         return $this->hasMany(RoutineSlot::class);
+    }
+
+    public function authorizationScope(): ResourceScope
+    {
+        $courseIds = $this->relationLoaded('courses') ? $this->courses->modelKeys() : $this->courses()->pluck('courses.id')->all();
+
+        return ResourceScope::forOwner($this->user_id)
+            ->merge(ResourceScope::forDepartment($this->department_id))
+            ->merge(new ResourceScope(courseIds: array_map('intval', $courseIds)));
     }
 
     protected function casts(): array

@@ -27,7 +27,7 @@ return [
             'pages' => true,
             'widgets' => true,
             'resources' => true,
-            'custom_permissions' => false,
+            'custom_permissions' => true,
         ],
     ],
 
@@ -120,7 +120,7 @@ return [
         'separator' => ':',
         'case' => 'pascal',
         'generate' => true,
-        'format_custom_permission_keys' => true,
+        'format_custom_permission_keys' => false,
     ],
 
     /*
@@ -195,7 +195,8 @@ return [
             ],
         ],
         'exclude' => [
-            //
+            // Guarded by the ERP permission `audit_log:view` (custom permissions tab).
+            \App\Filament\Resources\AuditLogs\AuditLogResource::class,
         ],
     ],
 
@@ -252,7 +253,11 @@ return [
     |
     */
 
-    'custom_permissions' => [],
+    /*
+     | The ERP `resource:action` catalog (config/erp.php) — kept verbatim, so
+     | format_custom_permission_keys is false above.
+     */
+    'custom_permissions' => (require __DIR__.'/erp.php')['rbac']['permissions'],
 
     /*
     |--------------------------------------------------------------------------
