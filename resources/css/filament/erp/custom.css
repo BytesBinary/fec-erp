@@ -1,0 +1,257 @@
+/*
+ * Forest & Ochre theme — custom overrides on top of Filament's base
+ * component styles. Hardcoded hex values are used deliberately here rather
+ * than Tailwind utility classes, since Filament's color utilities are
+ * generated at runtime from ->colors() and aren't available for arbitrary
+ * custom selectors at build time.
+ */
+
+:root {
+    --erp-forest: #1f3d2e;
+    --erp-forest-deep: #16281d;
+    --erp-forest-light: #3f6b4e;
+    --erp-cream: #f6f1e7;
+    --erp-ochre: #c1652f;
+    --erp-charcoal: #2b2b28;
+    --erp-surface-radius: 0.875rem;
+    --erp-control-radius: 0.625rem;
+    --erp-hairline: rgba(31, 61, 46, 0.1);
+    --erp-hairline-dark: rgba(246, 241, 231, 0.08);
+}
+
+/* ── Headings use the serif display face ── */
+
+.fi-header-heading,
+.fi-simple-header-heading,
+.fi-section-header-heading,
+.fi-ta-header-heading,
+.fi-modal-heading,
+.fi-empty-state-heading,
+.fi-logo {
+    font-family: var(--font-serif);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+/* ── Page background ── */
+
+.fi-body {
+    background-color: var(--erp-cream);
+}
+
+:where(.dark, .dark *) .fi-body {
+    background-color: #1a2420;
+}
+
+/* ── Sidebar ── */
+
+.fi-sidebar {
+    background-color: var(--erp-forest) !important;
+}
+
+.fi-sidebar-header,
+.fi-body-has-topbar .fi-sidebar-header,
+:not(.fi-body-has-topbar) .fi-sidebar-header {
+    background-color: var(--erp-forest) !important;
+    box-shadow: none !important;
+}
+
+.fi-sidebar .fi-logo {
+    color: var(--erp-cream);
+}
+
+.fi-sidebar-group-label {
+    color: rgba(246, 241, 231, 0.55) !important;
+}
+
+.fi-sidebar-group-btn .fi-icon {
+    color: rgba(246, 241, 231, 0.55) !important;
+}
+
+.fi-sidebar-item-label {
+    color: rgba(246, 241, 231, 0.85) !important;
+}
+
+.fi-sidebar-item-btn .fi-icon {
+    color: rgba(246, 241, 231, 0.55) !important;
+}
+
+.fi-sidebar-item-has-url > .fi-sidebar-item-btn:hover,
+.fi-sidebar-group-dropdown-trigger-btn:hover,
+.fi-sidebar-database-notifications-btn:hover {
+    background-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+.fi-sidebar-item.fi-active > .fi-sidebar-item-btn {
+    background-color: rgba(193, 101, 47, 0.18) !important;
+}
+
+.fi-sidebar-item.fi-active > .fi-sidebar-item-btn > .fi-icon,
+.fi-sidebar-item.fi-active > .fi-sidebar-item-btn > .fi-sidebar-item-label {
+    color: var(--erp-ochre) !important;
+}
+
+.fi-sidebar-item-grouped-border-part-not-first,
+.fi-sidebar-item-grouped-border-part-not-last {
+    background-color: rgba(246, 241, 231, 0.2) !important;
+}
+
+.fi-sidebar .fi-user-menu-trigger {
+    color: rgba(246, 241, 231, 0.85);
+}
+
+.fi-sidebar .fi-user-menu-trigger .fi-icon {
+    color: rgba(246, 241, 231, 0.55) !important;
+}
+
+.fi-sidebar .fi-user-menu-trigger .fi-tenant-menu-trigger-text {
+    color: var(--erp-cream) !important;
+}
+
+/* ── Topbar ── */
+
+.fi-topbar {
+    background-color: var(--erp-cream);
+    border-bottom: 1px solid var(--erp-hairline);
+    box-shadow: none;
+}
+
+:where(.dark, .dark *) .fi-topbar {
+    background-color: #1a2420;
+    border-bottom-color: var(--erp-hairline-dark);
+}
+
+/* ── Cards / sections: replace the generic grey shadow-card look ── */
+
+.fi-section:not(.fi-aside) {
+    border-radius: var(--erp-surface-radius);
+    box-shadow: 0 1px 2px rgba(31, 61, 46, 0.06);
+    border: 1px solid var(--erp-hairline) !important;
+}
+
+:where(.dark, .dark *) .fi-section:not(.fi-aside) {
+    border: 1px solid var(--erp-hairline-dark) !important;
+}
+
+/* ── Tables ── */
+
+.fi-ta-ctn {
+    border-radius: var(--erp-surface-radius);
+    border: 1px solid var(--erp-hairline) !important;
+    box-shadow: 0 1px 2px rgba(31, 61, 46, 0.06);
+}
+
+:where(.dark, .dark *) .fi-ta-ctn {
+    border: 1px solid var(--erp-hairline-dark) !important;
+}
+
+.fi-ta-table > thead > tr {
+    background-color: rgba(31, 61, 46, 0.05);
+}
+
+:where(.dark, .dark *) .fi-ta-table > thead > tr {
+    background-color: rgba(246, 241, 231, 0.04);
+}
+
+.fi-ta-row.fi-clickable:hover {
+    background-color: rgba(193, 101, 47, 0.06);
+}
+
+/* ── Other floating surfaces: modals, dropdowns, tabs, empty states,
+   callouts, toasts — unify radius + hairline with cards/tables ── */
+
+.fi-modal-window,
+.fi-dropdown-panel,
+.fi-tabs:not(.fi-contained),
+.fi-empty-state:not(.fi-empty-state-not-contained),
+.fi-callout,
+.fi-no-notification:not(.fi-inline),
+.fi-simple-main {
+    border-radius: var(--erp-surface-radius) !important;
+}
+
+.fi-dropdown-panel,
+.fi-tabs:not(.fi-contained),
+.fi-empty-state:not(.fi-empty-state-not-contained) {
+    border: 1px solid var(--erp-hairline) !important;
+}
+
+:where(.dark, .dark *) .fi-dropdown-panel,
+:where(.dark, .dark *) .fi-tabs:not(.fi-contained),
+:where(.dark, .dark *) .fi-empty-state:not(.fi-empty-state-not-contained) {
+    border: 1px solid var(--erp-hairline-dark) !important;
+}
+
+/* ── Buttons ── */
+
+.fi-btn {
+    border-radius: var(--erp-control-radius);
+}
+
+.fi-btn:not(.fi-outlined).fi-color {
+    box-shadow: 0 1px 2px rgba(31, 61, 46, 0.12);
+    transition:
+        transform 0.1s ease,
+        box-shadow 0.1s ease;
+}
+
+.fi-btn:not(.fi-outlined).fi-color:not(.fi-disabled):not([disabled]):hover {
+    box-shadow: 0 2px 6px rgba(31, 61, 46, 0.18);
+    transform: translateY(-1px);
+}
+
+.fi-btn-group {
+    border-radius: var(--erp-control-radius);
+}
+
+/* ── Badges: pill shape reads warmer than Filament's default block ── */
+
+.fi-badge {
+    border-radius: 9999px;
+}
+
+/* ── Icon buttons: give hover state a warm, brand-consistent tint ── */
+
+.fi-icon-btn.fi-force-enabled:hover,
+.fi-icon-btn:not(.fi-disabled):not([disabled]):hover {
+    background-color: rgba(193, 101, 47, 0.1);
+}
+
+/* ── Inputs ── */
+
+.fi-input-wrp {
+    border-radius: var(--erp-control-radius);
+}
+
+/* ── Pagination items ── */
+
+.fi-pagination-items {
+    border-radius: var(--erp-control-radius);
+    border: 1px solid var(--erp-hairline) !important;
+}
+
+:where(.dark, .dark *) .fi-pagination-items {
+    border: 1px solid var(--erp-hairline-dark) !important;
+}
+
+/* ── Avatar inside the sidebar user menu: a soft ring lifts it off the
+   forest background ── */
+
+.fi-sidebar .fi-avatar {
+    box-shadow: 0 0 0 2px rgba(246, 241, 231, 0.25);
+}
+
+/* ── Simple layout (login page) ── */
+
+.fi-simple-layout {
+    background: linear-gradient(160deg, var(--erp-cream) 0%, #efe6d2 100%);
+}
+
+:where(.dark, .dark *) .fi-simple-layout {
+    background: linear-gradient(160deg, #1a2420 0%, var(--erp-forest-deep) 100%);
+}
+
+.fi-simple-main {
+    border: 1px solid var(--erp-hairline);
+    box-shadow: 0 8px 24px rgba(31, 61, 46, 0.08);
+}
