@@ -61,34 +61,35 @@
 }
 
 .fi-sidebar-group-label {
-    color: rgba(246, 241, 231, 0.55) !important;
+    color: rgba(246, 241, 231, 0.62) !important;
 }
 
 .fi-sidebar-group-btn .fi-icon {
-    color: rgba(246, 241, 231, 0.55) !important;
+    color: rgba(246, 241, 231, 0.62) !important;
 }
 
 .fi-sidebar-item-label {
-    color: rgba(246, 241, 231, 0.85) !important;
+    color: rgba(246, 241, 231, 0.92) !important;
 }
 
 .fi-sidebar-item-btn .fi-icon {
-    color: rgba(246, 241, 231, 0.55) !important;
+    color: rgba(246, 241, 231, 0.78) !important;
 }
 
 .fi-sidebar-item-has-url > .fi-sidebar-item-btn:hover,
 .fi-sidebar-group-dropdown-trigger-btn:hover,
 .fi-sidebar-database-notifications-btn:hover {
-    background-color: rgba(255, 255, 255, 0.06) !important;
+    background-color: rgba(255, 255, 255, 0.08) !important;
 }
 
 .fi-sidebar-item.fi-active > .fi-sidebar-item-btn {
-    background-color: rgba(193, 101, 47, 0.18) !important;
+    background-color: var(--erp-ochre) !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .fi-sidebar-item.fi-active > .fi-sidebar-item-btn > .fi-icon,
 .fi-sidebar-item.fi-active > .fi-sidebar-item-btn > .fi-sidebar-item-label {
-    color: var(--erp-ochre) !important;
+    color: var(--erp-cream) !important;
 }
 
 .fi-sidebar-item-grouped-border-part-not-first,

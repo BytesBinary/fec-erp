@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "801140a52b2c28d5f6064b86981238db",
+    "content-hash": "c7e7b6d4b67af1619e7710c9ead353a1",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -4352,65 +4352,6 @@
                 }
             ],
             "time": "2026-02-16T23:10:27+00:00"
-        },
-        {
-            "name": "openplain/filament-shadcn-theme",
-            "version": "v1.1.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/openplain/filament-shadcn-theme.git",
-                "reference": "e4918c8a34d6089326af25d21ff26ed069f0d05a"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/openplain/filament-shadcn-theme/zipball/e4918c8a34d6089326af25d21ff26ed069f0d05a",
-                "reference": "e4918c8a34d6089326af25d21ff26ed069f0d05a",
-                "shasum": ""
-            },
-            "require": {
-                "filament/filament": "^4.0|^5.0",
-                "php": "^8.2|^8.3|^8.4"
-            },
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "providers": [
-                        "Openplain\\FilamentShadcnTheme\\FilamentShadcnThemeServiceProvider"
-                    ]
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Openplain\\FilamentShadcnTheme\\": "src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Openplain",
-                    "email": "hello@openplain.dev"
-                }
-            ],
-            "description": "Shadcn UI theme for Filament - Beautiful color themes with the iconic Shadcn design system",
-            "homepage": "https://github.com/openplain/filament-shadcn-theme",
-            "keywords": [
-                "colors",
-                "dark-mode",
-                "filament",
-                "filament-theme",
-                "light-mode",
-                "shadcn",
-                "shadcn-ui",
-                "theme"
-            ],
-            "support": {
-                "issues": "https://github.com/openplain/filament-shadcn-theme/issues",
-                "source": "https://github.com/openplain/filament-shadcn-theme/tree/v1.1.0"
-            },
-            "time": "2026-01-19T14:22:59+00:00"
         },
         {
             "name": "openspout/openspout",
