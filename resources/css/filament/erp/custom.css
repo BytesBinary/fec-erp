@@ -109,17 +109,38 @@
     color: var(--erp-cream) !important;
 }
 
-/* ── Topbar ── */
+/* ── Topbar: same forest surface as the sidebar, so the two nav bands
+   read as one continuous piece instead of a light/dark mismatch ── */
 
 .fi-topbar {
-    background-color: var(--erp-cream);
-    border-bottom: 1px solid var(--erp-hairline);
+    background-color: var(--erp-forest) !important;
+    border-bottom: 1px solid rgba(246, 241, 231, 0.12);
     box-shadow: none;
 }
 
-:where(.dark, .dark *) .fi-topbar {
-    background-color: #1a2420;
-    border-bottom-color: var(--erp-hairline-dark);
+.fi-topbar .fi-logo {
+    color: var(--erp-cream);
+}
+
+.fi-topbar .fi-icon-btn {
+    color: rgba(246, 241, 231, 0.78);
+}
+
+.fi-topbar .fi-icon-btn.fi-force-enabled:hover,
+.fi-topbar .fi-icon-btn:not(.fi-disabled):not([disabled]):hover {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.fi-topbar .fi-user-menu-trigger {
+    color: rgba(246, 241, 231, 0.92);
+}
+
+.fi-topbar .fi-user-menu-trigger .fi-icon {
+    color: rgba(246, 241, 231, 0.62) !important;
+}
+
+.fi-topbar .fi-avatar {
+    box-shadow: 0 0 0 2px rgba(246, 241, 231, 0.25);
 }
 
 /* ── Cards / sections: replace the generic grey shadow-card look ── */
