@@ -197,6 +197,12 @@ return [
         'exclude' => [
             // Guarded by the ERP permission `audit_log:view` (custom permissions tab).
             \App\Filament\Resources\AuditLogs\AuditLogResource::class,
+            // Guarded by the ERP `resource:action` permissions (custom permissions tab).
+            \App\Filament\Resources\Users\UserResource::class,
+            \App\Filament\Resources\Programs\ProgramResource::class,
+            \App\Filament\Resources\Semesters\SemesterResource::class,
+            \App\Filament\Resources\Halls\HallResource::class,
+            \App\Filament\Resources\Notices\NoticeResource::class,
         ],
     ],
 

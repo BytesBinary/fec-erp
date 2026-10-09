@@ -89,10 +89,13 @@ migrate_and_seed() {
   echo "Checking every migration rolls back cleanly..."
   isolated php artisan migrate:reset --force --no-interaction || return 1
   isolated php artisan migrate --force --no-interaction || return 1
+  echo "Checking the development seeders (db:seed) on a fresh schema..."
+  isolated php artisan db:seed --force --no-interaction || return 1
   if isolated php artisan list --raw 2>/dev/null | grep -q '^seed:test'; then
+    echo "Seeding the deterministic test dataset (seed:test, twice for idempotency)..."
+    isolated php artisan migrate:fresh --force --no-interaction || return 1
     isolated php artisan seed:test --no-interaction || return 1
-  else
-    isolated php artisan db:seed --force --no-interaction || return 1
+    isolated php artisan seed:test --no-interaction || return 1
   fi
 }
 

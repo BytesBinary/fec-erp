@@ -59,6 +59,7 @@ class ErpPanelProvider extends PanelProvider
                 'Routine',
                 'Manage Exams',
                 'Academic',
+                'Campus',
                 'Settings',
             ])
             ->sidebarCollapsibleOnDesktop(true)
