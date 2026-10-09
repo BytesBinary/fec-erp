@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Models\Batch;
 use App\Models\Department;
 use BackedEnum;
+use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -15,6 +16,8 @@ use UnitEnum;
 
 class BatchOverview extends Page
 {
+    use HasPageShield;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedAcademicCap;
 
     protected static string|UnitEnum|null $navigationGroup = 'Academic';

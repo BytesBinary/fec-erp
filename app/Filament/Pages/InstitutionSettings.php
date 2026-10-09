@@ -4,6 +4,7 @@ namespace App\Filament\Pages;
 
 use App\Models\InstitutionSetting;
 use BackedEnum;
+use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Textarea;
@@ -18,6 +19,8 @@ use UnitEnum;
 
 class InstitutionSettings extends Page
 {
+    use HasPageShield;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingLibrary;
 
     protected static string|UnitEnum|null $navigationGroup = 'Settings';

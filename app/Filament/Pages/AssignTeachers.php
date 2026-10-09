@@ -6,6 +6,7 @@ use App\Models\Course;
 use App\Models\Department;
 use App\Models\Teacher;
 use BackedEnum;
+use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Database\Seeders\CourseTeacherSeeder;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Hidden;
@@ -22,6 +23,8 @@ use UnitEnum;
 
 class AssignTeachers extends Page
 {
+    use HasPageShield;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserPlus;
 
     protected static string|UnitEnum|null $navigationGroup = 'Routine';

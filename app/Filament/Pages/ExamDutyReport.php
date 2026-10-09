@@ -7,6 +7,7 @@ use App\Models\InstitutionSetting;
 use App\Models\User;
 use BackedEnum;
 use Barryvdh\DomPDF\Facade\Pdf;
+use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
@@ -18,6 +19,8 @@ use UnitEnum;
 
 class ExamDutyReport extends Page
 {
+    use HasPageShield;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentList;
 
     protected static string|UnitEnum|null $navigationGroup = 'Manage Exams';
