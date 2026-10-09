@@ -18,6 +18,8 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
+            $table->string('theme')->default('forest-ochre');
+            $table->string('theme_primary_color')->nullable();
             $table->softDeletes();
             $table->timestamps();
         });

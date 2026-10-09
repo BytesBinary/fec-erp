@@ -1,22 +1,31 @@
 /*
- * Forest & Ochre theme — custom overrides on top of Filament's base
- * component styles. Hardcoded hex values are used deliberately here rather
- * than Tailwind utility classes, since Filament's color utilities are
- * generated at runtime from ->colors() and aren't available for arbitrary
- * custom selectors at build time.
+ * Theme system — custom overrides on top of Filament's base component
+ * styles. There are six color presets (App\Enums\ThemePreset); each
+ * user picks one for their own account, with an optional override of
+ * the accent color. The :root block below holds the "Forest & Ochre"
+ * defaults; ErpPanelProvider renders a small inline <style> block per
+ * request (via a HEAD_END render hook) that overrides --erp-nav,
+ * --erp-nav-deep, --erp-content, and --erp-content-dark with the
+ * current user's chosen preset, read from ThemePreset — the only
+ * place these hex values are defined, so CSS and PHP never drift.
+ *
+ * The accent color itself is never hardcoded here either: it's read
+ * straight off Filament's own --primary-* scale, which is generated
+ * server-side from the user's preset (or custom override) via
+ * ->colors(), so every accent-tinted surface below stays in sync
+ * automatically.
  */
 
 :root {
-    --erp-forest: #1f3d2e;
-    --erp-forest-deep: #16281d;
-    --erp-forest-light: #3f6b4e;
-    --erp-cream: #f6f1e7;
-    --erp-ochre: #c1652f;
-    --erp-charcoal: #2b2b28;
+    --erp-nav: #1f3d2e;
+    --erp-nav-deep: #16281d;
+    --erp-content: #f6f1e7;
+    --erp-content-dark: #1a2420;
+    --erp-nav-text: rgba(246, 241, 231, 0.92);
     --erp-surface-radius: 0.875rem;
     --erp-control-radius: 0.625rem;
-    --erp-hairline: rgba(31, 61, 46, 0.1);
-    --erp-hairline-dark: rgba(246, 241, 231, 0.08);
+    --erp-hairline: rgba(0, 0, 0, 0.08);
+    --erp-hairline-dark: rgba(255, 255, 255, 0.08);
 }
 
 /* ── Headings use the serif display face ── */
@@ -36,28 +45,28 @@
 /* ── Page background ── */
 
 .fi-body {
-    background-color: var(--erp-cream);
+    background-color: var(--erp-content);
 }
 
 :where(.dark, .dark *) .fi-body {
-    background-color: #1a2420;
+    background-color: var(--erp-content-dark);
 }
 
 /* ── Sidebar ── */
 
 .fi-sidebar {
-    background-color: var(--erp-forest) !important;
+    background-color: var(--erp-nav) !important;
 }
 
 .fi-sidebar-header,
 .fi-body-has-topbar .fi-sidebar-header,
 :not(.fi-body-has-topbar) .fi-sidebar-header {
-    background-color: var(--erp-forest) !important;
+    background-color: var(--erp-nav) !important;
     box-shadow: none !important;
 }
 
 .fi-sidebar .fi-logo {
-    color: var(--erp-cream);
+    color: var(--erp-nav-text);
 }
 
 .fi-sidebar-group-label {
@@ -83,13 +92,13 @@
 }
 
 .fi-sidebar-item.fi-active > .fi-sidebar-item-btn {
-    background-color: var(--erp-ochre) !important;
+    background-color: var(--primary-600) !important;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .fi-sidebar-item.fi-active > .fi-sidebar-item-btn > .fi-icon,
 .fi-sidebar-item.fi-active > .fi-sidebar-item-btn > .fi-sidebar-item-label {
-    color: var(--erp-cream) !important;
+    color: var(--erp-nav-text) !important;
 }
 
 .fi-sidebar-item-grouped-border-part-not-first,
@@ -106,20 +115,20 @@
 }
 
 .fi-sidebar .fi-user-menu-trigger .fi-tenant-menu-trigger-text {
-    color: var(--erp-cream) !important;
+    color: var(--erp-nav-text) !important;
 }
 
-/* ── Topbar: same forest surface as the sidebar, so the two nav bands
-   read as one continuous piece instead of a light/dark mismatch ── */
+/* ── Topbar: same surface as the sidebar, so the two nav bands read as
+   one continuous piece instead of a light/dark mismatch ── */
 
 .fi-topbar {
-    background-color: var(--erp-forest) !important;
+    background-color: var(--erp-nav) !important;
     border-bottom: 1px solid rgba(246, 241, 231, 0.12);
     box-shadow: none;
 }
 
 .fi-topbar .fi-logo {
-    color: var(--erp-cream);
+    color: var(--erp-nav-text);
 }
 
 .fi-topbar .fi-icon-btn {
@@ -147,7 +156,7 @@
 
 .fi-section:not(.fi-aside) {
     border-radius: var(--erp-surface-radius);
-    box-shadow: 0 1px 2px rgba(31, 61, 46, 0.06);
+    box-shadow: 0 1px 2px color-mix(in srgb, var(--erp-nav) 6%, transparent);
     border: 1px solid var(--erp-hairline) !important;
 }
 
@@ -160,7 +169,7 @@
 .fi-ta-ctn {
     border-radius: var(--erp-surface-radius);
     border: 1px solid var(--erp-hairline) !important;
-    box-shadow: 0 1px 2px rgba(31, 61, 46, 0.06);
+    box-shadow: 0 1px 2px color-mix(in srgb, var(--erp-nav) 6%, transparent);
 }
 
 :where(.dark, .dark *) .fi-ta-ctn {
@@ -168,7 +177,7 @@
 }
 
 .fi-ta-table > thead > tr {
-    background-color: rgba(31, 61, 46, 0.05);
+    background-color: color-mix(in srgb, var(--erp-nav) 5%, transparent);
 }
 
 :where(.dark, .dark *) .fi-ta-table > thead > tr {
@@ -176,7 +185,7 @@
 }
 
 .fi-ta-row.fi-clickable:hover {
-    background-color: rgba(193, 101, 47, 0.06);
+    background-color: color-mix(in srgb, var(--primary-600) 6%, transparent);
 }
 
 /* ── Other floating surfaces: modals, dropdowns, tabs, empty states,
@@ -211,14 +220,14 @@
 }
 
 .fi-btn:not(.fi-outlined).fi-color {
-    box-shadow: 0 1px 2px rgba(31, 61, 46, 0.12);
+    box-shadow: 0 1px 2px color-mix(in srgb, var(--erp-nav) 12%, transparent);
     transition:
         transform 0.1s ease,
         box-shadow 0.1s ease;
 }
 
 .fi-btn:not(.fi-outlined).fi-color:not(.fi-disabled):not([disabled]):hover {
-    box-shadow: 0 2px 6px rgba(31, 61, 46, 0.18);
+    box-shadow: 0 2px 6px color-mix(in srgb, var(--erp-nav) 18%, transparent);
     transform: translateY(-1px);
 }
 
@@ -232,11 +241,12 @@
     border-radius: 9999px;
 }
 
-/* ── Icon buttons: give hover state a warm, brand-consistent tint ── */
+/* ── Icon buttons: give hover state an accent-tinted, brand-consistent
+   tint ── */
 
 .fi-icon-btn.fi-force-enabled:hover,
 .fi-icon-btn:not(.fi-disabled):not([disabled]):hover {
-    background-color: rgba(193, 101, 47, 0.1);
+    background-color: color-mix(in srgb, var(--primary-600) 10%, transparent);
 }
 
 /* ── Inputs ── */
@@ -257,7 +267,7 @@
 }
 
 /* ── Avatar inside the sidebar user menu: a soft ring lifts it off the
-   forest background ── */
+   nav background ── */
 
 .fi-sidebar .fi-avatar {
     box-shadow: 0 0 0 2px rgba(246, 241, 231, 0.25);
@@ -266,14 +276,18 @@
 /* ── Simple layout (login page) ── */
 
 .fi-simple-layout {
-    background: linear-gradient(160deg, var(--erp-cream) 0%, #efe6d2 100%);
+    background: linear-gradient(
+        160deg,
+        var(--erp-content) 0%,
+        color-mix(in srgb, var(--erp-content) 85%, var(--erp-nav) 15%) 100%
+    );
 }
 
 :where(.dark, .dark *) .fi-simple-layout {
-    background: linear-gradient(160deg, #1a2420 0%, var(--erp-forest-deep) 100%);
+    background: linear-gradient(160deg, var(--erp-content-dark) 0%, var(--erp-nav-deep) 100%);
 }
 
 .fi-simple-main {
     border: 1px solid var(--erp-hairline);
-    box-shadow: 0 8px 24px rgba(31, 61, 46, 0.08);
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--erp-nav) 8%, transparent);
 }
