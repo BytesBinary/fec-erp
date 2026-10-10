@@ -2,12 +2,15 @@
 
 namespace App\Providers;
 
+use App\Events\McpIntegrationsStopRequested;
+use App\Events\TwoFactorDeactivated;
 use App\Listeners\RecordRoleAndPermissionChanges;
 use App\Listeners\RememberLoginPreference;
 use App\Models\User;
 use App\Observers\UserPasswordObserver;
 use App\Policies\RolePolicy;
 use App\Services\Audit\AuditLogger;
+use App\Services\Mcp\IntegrationService;
 use App\Services\Notifications\Contracts\ExternalMessenger;
 use App\Services\Notifications\LogMessenger;
 use App\Support\Authorization\Authorizer;
@@ -43,6 +46,8 @@ class AppServiceProvider extends ServiceProvider
 
         Event::subscribe(RecordRoleAndPermissionChanges::class);
         Event::listen(Login::class, RememberLoginPreference::class);
+        Event::listen(TwoFactorDeactivated::class, fn (TwoFactorDeactivated $event) => app(IntegrationService::class)->stopAllFor($event->user, null, 'Two-factor authentication was turned off or reset'));
+        Event::listen(McpIntegrationsStopRequested::class, fn (McpIntegrationsStopRequested $event) => app(IntegrationService::class)->stopAllFor($event->user, $event->user, 'Stopped from the Devices page'));
 
         User::observe(UserPasswordObserver::class);
     }

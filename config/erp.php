@@ -144,6 +144,8 @@ return [
             'session:revoke' => 'Revoke any user\'s login sessions',
             'two_factor:reset' => 'Reset a user\'s two-factor authentication',
             'security:manage' => 'Manage the security policy (2FA per role)',
+            'mcp_integration:manage_all' => 'View and revoke every user\'s AI integrations',
+            'mcp:configure' => 'Switch MCP on or off globally and per role',
         ],
 
         /*

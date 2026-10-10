@@ -11,7 +11,7 @@ Decisions: `docs/DECISIONS.md` · Verify: `.autopilot/verify.sh`
 - [x] **2** — Profile gate + Results/CGPA (E2E 1, 2) (2026-10-10; verify: Unit 70, Feature 195, Browser 9 — all pass)
 - [x] **3** — Clearance core (E2E 3 to READY, 4, 5, 6) (2026-10-10; verify: Unit 86, Feature 253, Browser 14 — all pass)
 - [x] **4** — Clearance desk, print/PDF, verification (E2E 3 full, 7, 8) (2026-10-10; verify: Unit 86, Feature 277, Browser 16 — all pass)
-- [ ] **5** — MCP server + full tool catalog, contract/matrix/parity tests (E2E 10), README_MCP.md
+- [x] **5** — MCP server + full tool catalog, contract/matrix/parity tests (E2E 10), README_MCP.md (2026-10-10; verify: Unit 86, Feature 277, Mcp 82, Browser 17 — all pass)
 - [ ] **5M** — MCP access management (E2E 13, 14)
 - [ ] **6** — AI assistant + feature index (E2E 9)
 - [ ] **7** — Hardening, reminders, a11y, seed:demo, CI workflow, docs
@@ -33,7 +33,7 @@ Decisions: `docs/DECISIONS.md` · Verify: `.autopilot/verify.sh`
 
 - (none)
 
-## Next up (Phase 5)
+## Next up (Phase 5M)
 
 See ARCHITECTURE_NOTES §10 "Phase 1". Start with migrations (is_active, role rename, role_scopes,
 audit_logs, programs, semesters, notices), `RoleKey` enum, `config/erp.php`, `Authorizer`, `AuditLogger`,
@@ -56,3 +56,4 @@ services, `seed:test`.
 - Phase 2: browser server cannot receive multipart uploads (D-017). Seeded student data/expected CGPAs: TestDataset::EXPECTED_RESULTS. Feature tests that switch users in one test must call `$this->flushSession()`.
 - Phase 3: eligibility rule D-018; ClearanceService::transition() is the only status writer; ClearanceService has hooks for Phase 4 (markPrinted/markCollected, desk). Browser tests flush cache per request (login throttle).
 - Phase 4: PDF omits raster images when GD is missing (dompdf limitation; HTML print view is primary). Browser tests: use specific selectors (`a[href*=...]`); action modal buttons are 'Confirm' (requiresConfirmation) or 'Submit' (form only).
+- Phase 5: 109 tools (app/Mcp/Domains), ToolExecutor shared with the future assistant, IntegrationService/McpSettingsService already built (5M adds UI, command, E2E 13/14). Never run artisan migrate/other DB commands without the isolated env; browser E2E for users with 2FA must pass the challenge (totpCode(secret, 1)).

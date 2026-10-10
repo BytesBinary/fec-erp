@@ -19,6 +19,10 @@ pest()->extend(Tests\TestCase::class)
     ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
     ->in('Unit/Authorization');
 
+pest()->extend(Tests\TestCase::class)
+    ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
+    ->in('Mcp');
+
 pest()->extend(Tests\BrowserTestCase::class)
     ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
     ->in('Browser');
@@ -147,4 +151,23 @@ function approveInOrder(App\Models\ClearanceRequest $request, array $approverEma
     }
 
     return $request;
+}
+
+/**
+ * Enables 2FA for `$user` (if needed) and creates an MCP integration through the
+ * real service, including the step-up code. Returns the plain bearer token.
+ *
+ * @return array{token: string, integration: App\Models\McpIntegration}
+ */
+function mcpIntegrationFor(App\Models\User $user, string $access = 'full', ?int $days = 90, string $client = 'claude_code'): array
+{
+    $secret = 'JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP';
+
+    if (! app(App\Services\Security\TwoFactorService::class)->isEnabled($user)) {
+        enableTwoFactorFor($user, $secret);
+    }
+
+    App\Models\UserMfa::query()->where('user_id', $user->id)->update(['last_used_step' => null]);
+
+    return app(App\Services\Mcp\IntegrationService::class)->create($user, 'Test '.$client, $client, $access, $days, totpCode($secret));
 }

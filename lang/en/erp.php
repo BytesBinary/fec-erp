@@ -137,6 +137,23 @@ return [
         ],
     ],
 
+    'mcp' => [
+        'open_integrations' => 'Open AI integrations',
+        'created_title' => 'AI integration created',
+        'created_body' => 'The integration ":name" can now act on your behalf. Stop it from Settings → AI Integrations at any time.',
+        'revoked_title' => 'AI integration stopped',
+        'revoked_body' => 'The integration ":name" was stopped.',
+        'revoked_by_admin_body' => 'An administrator stopped your integration ":name". Reason: :reason',
+        'stopped_all_body' => ':count AI integration(s) were stopped (:reason).',
+        'expiring_title' => 'AI integration expiring soon',
+        'expiring_body' => 'The integration ":name" expires on :date. Create a new one to keep using it.',
+        'new_ip_title' => 'AI integration used from a new IP',
+        'new_ip_body' => '":name" connected from IP :ip for the first time. If this was not you, stop it now.',
+        'disabled_for_you' => 'AI integrations are switched off for your role.',
+        'needs_2fa' => 'To protect your account, AI integrations require two-factor authentication.',
+        'limit_reached' => 'You already have :max active AI integrations. Stop one first.',
+    ],
+
     'notifications' => [
         'open' => 'Open',
     ],
