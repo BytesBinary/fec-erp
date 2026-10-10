@@ -20,6 +20,7 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Locked;
 
 /**
  * One clearance request for staff: timeline, the student's dues and, for the
@@ -34,11 +35,13 @@ class ViewClearance extends Page
 
     protected string $view = 'filament.pages.clearance.view-clearance';
 
+    #[Locked]
     public int $recordId = 0;
 
     /**
      * The optimistic-lock version the page was rendered with.
      */
+    #[Locked]
     public int $loadedVersion = 0;
 
     public static function canAccess(): bool

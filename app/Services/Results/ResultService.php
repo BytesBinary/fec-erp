@@ -54,7 +54,7 @@ class ResultService
             ->whereHas('enrollment', fn ($query) => $query->where('student_id', $student->getKey())->where('status', 'enrolled'))
             ->with(['enrollment.offering.course', 'enrollment.offering.semester'])
             ->get()
-            ->sortBy(fn (Result $result): string => $result->enrollment->offering->semester->starts_on->format('Y-m-d').'|'.str_pad((string) $result->id, 10, '0', STR_PAD_LEFT))
+            ->sortBy(fn (Result $result): string => $this->attemptSortKey($result))
             ->values();
 
         $passAbove = (float) config('grading.pass_above');
@@ -234,9 +234,10 @@ class ResultService
         return Result::query()
             ->published()
             ->whereHas('enrollment', fn ($query) => $query->where('student_id', $student->getKey())->where('status', 'enrolled'))
-            ->with('enrollment.offering.course')
-            ->orderBy('id')
+            ->with(['enrollment.offering.course', 'enrollment.offering.semester'])
             ->get()
+            ->sortBy(fn (Result $result): string => $this->attemptSortKey($result))
+            ->values()
             ->map(fn (Result $result): GradedCourse => new GradedCourse(
                 $result->enrollment->offering->course_id,
                 (float) $result->enrollment->offering->course->credit_hours,
@@ -244,6 +245,15 @@ class ResultService
                 ++$order,
             ))
             ->all();
+    }
+
+    /**
+     * Chronological attempt order (semester start, then result id), shared by
+     * the transcript and the CGPA so "latest attempt" means the same in both.
+     */
+    protected function attemptSortKey(Result $result): string
+    {
+        return $result->enrollment->offering->semester->starts_on->format('Y-m-d').'|'.str_pad((string) $result->id, 10, '0', STR_PAD_LEFT);
     }
 
     protected function authorizeOffering(User $actor, string $permission, CourseOffering $offering): void

@@ -43,7 +43,7 @@ class EnsureTwoFactorChallengePassed
         }
 
         if ($request->hasHeader('X-Livewire')) {
-            return response('', 419);
+            abort(419);
         }
 
         return redirect()->to(TwoFactorChallenge::getUrl());

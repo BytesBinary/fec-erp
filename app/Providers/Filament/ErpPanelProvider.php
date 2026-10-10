@@ -108,7 +108,7 @@ class ErpPanelProvider extends PanelProvider
                 EnsureTwoFactorChallengePassed::class,
                 EnforceRoleTwoFactorSetup::class,
                 EnsureProfileComplete::class,
-            ])
+            ], isPersistent: true)
             ->renderHook(
                 PanelsRenderHook::BODY_END,
                 fn (): string => Auth::check() ? view('assistant.widget')->render() : '',

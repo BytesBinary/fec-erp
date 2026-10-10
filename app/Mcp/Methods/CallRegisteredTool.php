@@ -2,6 +2,7 @@
 
 namespace App\Mcp\Methods;
 
+use App\Mcp\Methods\Concerns\RevalidatesIntegration;
 use App\Mcp\Registry\ToolRegistry;
 use Generator;
 use Illuminate\Container\Container;
@@ -26,6 +27,7 @@ use Laravel\Mcp\Support\ValidationMessages;
 class CallRegisteredTool implements Errable, Method
 {
     use InteractsWithResponses;
+    use RevalidatesIntegration;
 
     /**
      * @return JsonRpcResponse|Generator<JsonRpcResponse>
@@ -34,6 +36,8 @@ class CallRegisteredTool implements Errable, Method
      */
     public function handle(JsonRpcRequest $request, ServerContext $context): Generator|JsonRpcResponse
     {
+        $this->revalidateIntegration($request);
+
         if (is_null($request->get('name'))) {
             throw new JsonRpcException('Missing [name] parameter.', -32602, $request->id);
         }

@@ -62,7 +62,7 @@ class TrackUserSession
         }
 
         if ($request->hasHeader('X-Livewire')) {
-            return response('', 419);
+            abort(419);
         }
 
         return redirect()->guest(filament()->getLoginUrl())->with('status', __("erp.security.{$code}"));

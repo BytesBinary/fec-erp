@@ -210,7 +210,7 @@ class ProfileService
             'email' => ['sometimes', 'nullable', 'email', 'max:255'],
             'present_address' => ['sometimes', 'nullable', 'string', 'min:5', 'max:1000'],
             'permanent_address' => ['sometimes', 'nullable', 'string', 'min:5', 'max:1000'],
-            'photo_path' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'photo_path' => ['sometimes', 'nullable', 'string', 'max:255', 'regex:#^'.preg_quote(trim((string) config('profile.photo.directory'), '/'), '#').'/[A-Za-z0-9._-]+$#'],
             'guardian_name' => ['sometimes', 'nullable', 'string', 'max:255'],
             'guardian_phone' => ['sometimes', 'nullable', 'regex:/^\+?[0-9]{10,15}$/'],
             'blood_group' => ['sometimes', 'nullable', 'in:'.implode(',', config('profile.blood_groups'))],

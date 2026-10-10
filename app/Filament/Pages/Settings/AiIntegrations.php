@@ -18,6 +18,7 @@ use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Locked;
 use UnitEnum;
 
 /**
@@ -57,14 +58,19 @@ class AiIntegrations extends Page
     /**
      * The plain token — held only until the wizard is closed, shown once.
      */
+    #[Locked]
     public ?string $newToken = null;
 
+    #[Locked]
     public ?int $newIntegrationId = null;
 
+    #[Locked]
     public ?int $activityIntegrationId = null;
 
+    #[Locked]
     public bool $connected = false;
 
+    #[Locked]
     public ?int $testStartedAt = null;
 
     public static function getNavigationLabel(): string
@@ -232,7 +238,7 @@ class AiIntegrations extends Page
             return;
         }
 
-        $this->connected = McpIntegration::query()->whereKey($this->newIntegrationId)->whereNotNull('first_connected_at')->exists();
+        $this->connected = McpIntegration::query()->where('user_id', $this->user()->getKey())->whereKey($this->newIntegrationId)->whereNotNull('first_connected_at')->exists();
     }
 
     public function troubleshooting(): bool
@@ -273,7 +279,7 @@ class AiIntegrations extends Page
             ->label(__('erp.mcp.rename'))
             ->color('gray')
             ->size('sm')
-            ->fillForm(fn (array $arguments): array => ['name' => McpIntegration::query()->find($arguments['integration'])?->name])
+            ->fillForm(fn (array $arguments): array => ['name' => McpIntegration::query()->where('user_id', $this->user()->getKey())->find($arguments['integration'])?->name])
             ->schema([TextInput::make('name')->required()->maxLength(120)])
             ->action(function (array $data, array $arguments): void {
                 $integration = McpIntegration::query()->where('user_id', $this->user()->getKey())->findOrFail($arguments['integration']);

@@ -4,6 +4,7 @@ namespace App\Services\Clearance;
 
 use App\Models\ClearanceApproval;
 use App\Models\ClearanceRequest;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Tamper-evidence for a clearance (spec §8.5): every approval row carries
@@ -67,6 +68,10 @@ class HashChain
                 return ['intact' => false, 'broken_at' => $approval->getKey(), 'checked' => $checked];
             }
 
+            if ($approval->signature_snapshot_path !== null && ! $this->signatureMatches($approval)) {
+                return ['intact' => false, 'broken_at' => $approval->getKey(), 'checked' => $checked];
+            }
+
             $previous = $approval->hash;
             $checked++;
         }
@@ -76,5 +81,16 @@ class HashChain
         }
 
         return ['intact' => true, 'broken_at' => null, 'checked' => $checked];
+    }
+
+    /**
+     * The stored signature image must still be the one that was signed off.
+     */
+    protected function signatureMatches(ClearanceApproval $approval): bool
+    {
+        $disk = Storage::disk(StaffSignatureService::DISK);
+
+        return $disk->exists($approval->signature_snapshot_path)
+            && hash('sha256', (string) $disk->get($approval->signature_snapshot_path)) === $approval->signature_sha256;
     }
 }

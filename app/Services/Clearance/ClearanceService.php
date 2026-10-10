@@ -75,6 +75,14 @@ class ClearanceService
         }
 
         $request = $this->audit->as($actor, fn (): ClearanceRequest => DB::transaction(function () use ($student, $actor): ClearanceRequest {
+            Student::query()->lockForUpdate()->findOrFail($student->getKey());
+
+            $recheck = $this->eligibility->check($student);
+
+            if (! $recheck->eligible()) {
+                throw new InvalidStateException(__('erp.clearance.not_eligible'), ['reasons' => $recheck->reasons]);
+            }
+
             $request = ClearanceRequest::query()->create([
                 'request_no' => $this->numbers->next(),
                 'verify_code' => $this->numbers->verifyCode(),

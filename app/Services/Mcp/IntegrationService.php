@@ -106,6 +106,35 @@ class IntegrationService
             throw new McpAuthenticationException('TOKEN_INVALID', 'This token is not recognised.');
         }
 
+        $this->assertUsable($integration);
+
+        $this->recordUse($integration, $ip);
+
+        return $integration;
+    }
+
+    /**
+     * Re-checks an already authenticated integration against the database.
+     * Long-lived transports (stdio) call this before every request so a
+     * revoked, expired or 2FA-less integration stops at once.
+     *
+     * @throws McpAuthenticationException
+     */
+    public function revalidate(McpIntegration $integration): McpIntegration
+    {
+        $fresh = McpIntegration::query()->with('user')->find($integration->getKey())
+            ?? throw new McpAuthenticationException('TOKEN_INVALID', 'This token is not recognised.');
+
+        $this->assertUsable($fresh);
+
+        return $fresh;
+    }
+
+    /**
+     * @throws McpAuthenticationException
+     */
+    protected function assertUsable(McpIntegration $integration): void
+    {
         if ($integration->isRevoked()) {
             throw new McpAuthenticationException('TOKEN_REVOKED', 'This integration was stopped. Create a new one in Settings → AI Integrations.');
         }
@@ -127,10 +156,6 @@ class IntegrationService
         if (! $this->twoFactor->isEnabled($user)) {
             throw new McpAuthenticationException('MFA_REQUIRED', 'Two-factor authentication must be enabled to use AI integrations.');
         }
-
-        $this->recordUse($integration, $ip);
-
-        return $integration;
     }
 
     /**

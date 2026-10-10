@@ -18,6 +18,7 @@ use App\Services\Audit\AuditLogger;
 use App\Support\Authorization\Authorizer;
 use Generator;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * The in-app assistant (spec §5). Runs a short tool-use loop against the
@@ -138,6 +139,14 @@ class AssistantService
      */
     public function confirm(User $user, int $messageId): array
     {
+        return $this->exclusively($messageId, fn (): array => $this->confirmLocked($user, $messageId));
+    }
+
+    /**
+     * @return array{ok: bool, payload: array<string, mixed>}
+     */
+    protected function confirmLocked(User $user, int $messageId): array
+    {
         $action = $this->ownAction($user, $messageId);
         $definition = $this->registry->find($action->tool_calls['tool']) ?? throw new NotFoundException('The requested tool was not found.');
 
@@ -158,9 +167,35 @@ class AssistantService
 
     public function cancel(User $user, int $messageId): void
     {
-        $action = $this->ownAction($user, $messageId);
-        $action->update(['tool_calls' => [...$action->tool_calls, 'status' => 'cancelled']]);
-        $action->conversation->messages()->create(['role' => 'assistant', 'content' => 'Okay, I did not change anything.']);
+        $this->exclusively($messageId, function () use ($user, $messageId): void {
+            $action = $this->ownAction($user, $messageId);
+            $action->update(['tool_calls' => [...$action->tool_calls, 'status' => 'cancelled']]);
+            $action->conversation->messages()->create(['role' => 'assistant', 'content' => 'Okay, I did not change anything.']);
+        });
+    }
+
+    /**
+     * Serialises handling of one confirmation card, so a double click or two
+     * tabs can never run the same write twice.
+     *
+     * @template TReturn
+     *
+     * @param  callable(): TReturn  $callback
+     * @return TReturn
+     */
+    protected function exclusively(int $messageId, callable $callback): mixed
+    {
+        $lock = Cache::lock("assistant-action:{$messageId}", 30);
+
+        if (! $lock->get()) {
+            throw new InvalidStateException('This action is already being handled.');
+        }
+
+        try {
+            return $callback();
+        } finally {
+            $lock->release();
+        }
     }
 
     /**

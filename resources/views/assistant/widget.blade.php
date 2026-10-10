@@ -90,6 +90,9 @@
                     errors: [...document.querySelectorAll('.fi-fo-field-wrp-error-message, [data-validation-error]')].map((e) => e.textContent.trim()).filter(Boolean).slice(0, 10),
                 };
             },
+            safeUrl(url) {
+                try { const parsed = new URL(url, window.location.origin); return parsed.origin === window.location.origin ? parsed.href : '#'; } catch (e) { return '#'; }
+            },
             scroll() { this.$nextTick(() => { const log = this.$refs.log; log.scrollTop = log.scrollHeight; }); },
             async send() {
                 const text = this.draft.trim();
@@ -120,7 +123,7 @@
                 if (!data) { return; }
                 let event; try { event = JSON.parse(data.slice(5).trim()); } catch (e) { return; }
                 if (event.type === 'text') { this.messages.push({ kind: 'text', role: 'assistant', text: event.text }); }
-                else if (event.type === 'link') { this.messages.push({ kind: 'link', ...event }); }
+                else if (event.type === 'link') { this.messages.push({ kind: 'link', ...event, url: this.safeUrl(event.url) }); }
                 else if (event.type === 'confirm') { this.messages.push({ kind: 'confirm', id: event.id, title: event.title, summary: event.summary, preview: event.preview, status: 'pending', resultText: '' }); }
             },
             async decide(message, action) {

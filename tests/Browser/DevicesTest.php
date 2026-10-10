@@ -46,3 +46,20 @@ it('shows a notification for a login from a new browser with a link to the devic
 
     $a->navigate('/security/devices')->assertSee('Where you are logged in');
 });
+
+it('a logged-out browser cannot keep acting through a Livewire page it already had open', function () {
+    $a = uiLogin(T::SUPER_ADMIN);
+    $b = uiLogin(T::SUPER_ADMIN);
+
+    $b->navigate('/security/devices')->assertSee('Where you are logged in');
+    $a->navigate('/security/devices')->assertCount('[data-testid=device-row]', 2);
+
+    $a->click('Log out')->wait(1)->click('Confirm')->wait(2);
+    $a->assertCount('[data-testid=device-row]', 1);
+
+    $b->script('window.confirm = () => false; window.alert = () => {}; document.querySelector("[data-testid=device-row]") && document.querySelector("button")?.click()');
+    $b->wait(2);
+
+    $a->navigate('/')->assertPathIs('/')->assertSee('Dashboard');
+    expect(App\Models\UserSession::query()->active()->count())->toBe(1);
+});
