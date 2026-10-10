@@ -225,6 +225,8 @@ return [
         'setup_required' => 'Your role requires two-factor authentication. Set it up to continue.',
 
         'new_device_title' => 'New login to your account',
+        'password_changed_title' => 'Your password was changed',
+        'password_changed_body' => 'Your password was changed and :count other device(s) were signed out. Not you? Contact the administration office.',
         'new_device_body' => 'New login to your account from :device (IP :ip). Not you? Log it out and change your password.',
         'review_devices' => 'Review devices',
         'locked_out_title' => 'Two-factor attempts locked',

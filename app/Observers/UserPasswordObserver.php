@@ -3,6 +3,7 @@
 namespace App\Observers;
 
 use App\Models\User;
+use App\Notifications\PasswordChanged;
 use App\Services\Security\SessionTracker;
 use Illuminate\Support\Facades\Auth;
 
@@ -23,6 +24,8 @@ class UserPasswordObserver
             ? $tracker->hash(request()->session()->getId())
             : null;
 
-        $tracker->revokeOthers($user, $current, Auth::user() instanceof User ? Auth::user() : null, 'password_changed');
+        $signedOut = $tracker->revokeOthers($user, $current, Auth::user() instanceof User ? Auth::user() : null, 'password_changed');
+
+        $user->notify(new PasswordChanged($signedOut));
     }
 }

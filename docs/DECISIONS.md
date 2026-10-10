@@ -178,3 +178,7 @@ Autopilot run: decisions are made without waiting for the product owner (see
 ## D-022 — Assistant behaviour
 - **Decision:** The assistant runs in-process through `ToolExecutor` (channel `assistant`), sees only tools the user may call, and turns every write tool into a confirmation card (`ToolExecutor::preview`, stored as an `assistant_messages` row with role `action`); Confirm executes with `confirm=true` after re-checking permissions. Tool results are masked (NID, phones) and labelled as data. History is one conversation per user (viewable and deletable). Without `ANTHROPIC_API_KEY` or when the API fails the widget answers with plain feature search. Streaming is SSE; `ASSISTANT_STREAM=false` returns the same events in one body (used only by the in-process browser-test server).
 - **Change:** `config/assistant.php`, `config/feature_index.php`.
+
+## D-023 — Spec coverage review deviations
+- **Decision:** Recorded as deliberate: no geo-IP location (spec only allows it when a local database already exists), no `accountant` role (no finance module), approvers see hall dues and library loans only (no discipline, room-handover or lab-equipment data model exists), no password/OTP re-confirmation on approval (pre-made decision 9), no Bangla UI (decision 11), e-mail/SMS through the pluggable log-only messenger (D-013/D-015). Coverage measurement (>= 90%) is left to CI once a coverage driver is installed.
+- **Change:** `config/clearance.php`, `config/security.php`, `config/erp.php`.

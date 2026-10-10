@@ -6,6 +6,7 @@ use App\Models\KnownDevice;
 use App\Models\User;
 use App\Models\UserSession;
 use App\Notifications\NewDeviceLogin;
+use App\Notifications\PasswordChanged;
 use App\Services\Security\SessionTracker;
 use Database\Seeders\Testing\TestDataset as T;
 use Illuminate\Support\Facades\Event;
@@ -163,6 +164,18 @@ it('revokes every other session when the password changes and keeps the current 
 
     expect(UserSession::query()->where('session_hash', sessionHash($this->sessionA))->firstOrFail()->isRevoked())->toBeFalse()
         ->and(UserSession::query()->where('session_hash', sessionHash($this->sessionB))->firstOrFail()->revoked_reason)->toBe('password_changed');
+});
+
+it('tells the user that the password changed and how many other devices were signed out', function () {
+    asSession($this->user, $this->sessionA)->get('/')->assertOk();
+    asSession($this->user, $this->sessionB)->get('/')->assertOk();
+    Notification::fake();
+
+    $this->user->update(['password' => 'another-new-password']);
+
+    Notification::assertSentTo($this->user, PasswordChanged::class, fn (PasswordChanged $notification): bool => $notification->signedOutDevices >= 1
+        && str_contains($notification->body(), $notification->signedOutDevices.' other device(s)')
+        && $notification->url() === Devices::getUrl());
 });
 
 it('stops revoked sessions of other devices after a password change while the acting device survives', function () {

@@ -4,6 +4,7 @@ use App\Filament\Pages\Clearance\Apply;
 use App\Filament\Pages\Clearance\MyClearance;
 use App\Filament\Pages\Clearance\PendingApprovals;
 use App\Filament\Pages\Clearance\ViewClearance;
+use App\Filament\Widgets\ClearanceWaiting;
 use Database\Seeders\Testing\TestDataset as T;
 use Livewire\Livewire;
 
@@ -105,4 +106,18 @@ it('hides the apply and approval pages from users who may not use them', functio
 
     $this->actingAs(datasetUser(T::STUDENT_ELIGIBLE));
     expect(Apply::canAccess())->toBeTrue()->and(PendingApprovals::canAccess())->toBeFalse();
+});
+
+it('shows each approver the count of requests waiting for them on the dashboard widget', function () {
+    applyForClearance(T::STUDENT_ELIGIBLE);
+
+    $this->actingAs(datasetUser(T::PROVOST_A));
+    expect(ClearanceWaiting::canView())->toBeTrue();
+    Livewire::test(ClearanceWaiting::class)->assertSee('Clearance requests waiting for me')->assertSeeHtml('data-testid="waiting-count">1<');
+
+    $this->actingAs(datasetUser(T::PROVOST_B));
+    Livewire::test(ClearanceWaiting::class)->assertSeeHtml('data-testid="waiting-count">0<');
+
+    $this->actingAs(datasetUser(T::STUDENT_ELIGIBLE));
+    expect(ClearanceWaiting::canView())->toBeFalse();
 });
