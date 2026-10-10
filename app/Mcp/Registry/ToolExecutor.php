@@ -84,6 +84,40 @@ class ToolExecutor
     }
 
     /**
+     * What a write tool would do, without doing it: runs the same permission,
+     * profile-gate and input checks, then returns the dry-run preview. Used by
+     * the assistant's confirmation cards for every write tool.
+     *
+     * @param  array<string, mixed>  $arguments
+     * @return array{ok: bool, payload: array<string, mixed>}
+     */
+    public function preview(User $user, ToolDefinition $definition, array $arguments, Channel $channel = Channel::Assistant): array
+    {
+        return RequestContext::current()->runAs($channel, function () use ($user, $definition, $arguments): array {
+            try {
+                if (! $this->hasPermission($user, $definition)) {
+                    $this->authorizer->authorize($user, explode('|', (string) $definition->permission)[0]);
+                }
+
+                if (! str_starts_with($definition->name, 'me_') && $this->profiles->isGated($user)) {
+                    throw new ProfileIncompleteException;
+                }
+
+                $validated = $this->validate($definition, $arguments);
+                unset($validated['confirm']);
+
+                $preview = $definition->preview !== null ? ($definition->preview)($user, $validated) : ['tool' => $definition->name, 'arguments' => $validated];
+
+                return ['ok' => true, 'payload' => ['summary' => "Prepared {$definition->title}; nothing has changed yet.", 'data' => $preview, 'dry_run' => true]];
+            } catch (Throwable $exception) {
+                $error = $this->toError($exception);
+
+                return ['ok' => false, 'payload' => ['error' => $error, 'summary' => $error['message']]];
+            }
+        });
+    }
+
+    /**
      * @param  array<string, mixed>  $arguments
      * @return array<string, mixed>
      */

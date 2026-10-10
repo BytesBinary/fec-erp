@@ -41,6 +41,13 @@ Format: one entry per line, `` `Class::method` `` or `` `Class::*` `` or `` `*::
 - `App\Services\Clearance\QrCodeService::*` — image rendering for the print view.
 - `App\Services\Clearance\RequestNumberGenerator::*` — internal id generation.
 - `App\Services\Clearance\StageResolver::*` — internal chain ordering.
+- `App\Services\Assistant\AssistantService::*` — the assistant itself (it runs the same tools in-process).
+- `App\Services\Assistant\FeatureIndex::entries` — internal; `help_search_features` covers `search`.
+- `App\Services\Assistant\FeatureIndex::menuClasses` — internal, used by the completeness test.
+- `App\Services\Assistant\FeatureIndex::entriesFor` — internal; `help_search_features` covers `search`.
+- `App\Services\Assistant\PiiMasker::*` — masking helper.
+- `App\Services\Assistant\SystemPromptBuilder::*` — prompt assembly.
+- `App\Services\Assistant\Providers\*` — language-model adapters.
 - `App\Services\Notifications\*` — message delivery driver.
 - `App\Services\Profile\ProfileCompletionChecker::*` — used by `me_get_profile`.
 - `App\Services\Profile\ProfileService::studentOf` — internal lookup.

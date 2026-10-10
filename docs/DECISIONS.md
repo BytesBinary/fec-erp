@@ -174,3 +174,7 @@ Autopilot run: decisions are made without waiting for the product owner (see
 
 ## D-021 — Client snippets
 - **Decision:** Connection snippets live in `config/mcp_clients.php` (one file). The formats (Claude Code `claude mcp add --transport http`, Claude Desktop via `mcp-remote`, Cursor `mcpServers` + `url`/`headers`, VS Code `servers` + `type: http`) are from the clients' public documentation as known on 2026-10-10 and could not be re-fetched during the unattended run; update the file if a client changes format.
+
+## D-022 — Assistant behaviour
+- **Decision:** The assistant runs in-process through `ToolExecutor` (channel `assistant`), sees only tools the user may call, and turns every write tool into a confirmation card (`ToolExecutor::preview`, stored as an `assistant_messages` row with role `action`); Confirm executes with `confirm=true` after re-checking permissions. Tool results are masked (NID, phones) and labelled as data. History is one conversation per user (viewable and deletable). Without `ANTHROPIC_API_KEY` or when the API fails the widget answers with plain feature search. Streaming is SSE; `ASSISTANT_STREAM=false` returns the same events in one body (used only by the in-process browser-test server).
+- **Change:** `config/assistant.php`, `config/feature_index.php`.

@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Event;
 use Livewire\Livewire;
 
 beforeEach(function () {
+    $this->freezeTime();
     seedTestDataset();
 
     $this->user = datasetUser(T::TEACHER);

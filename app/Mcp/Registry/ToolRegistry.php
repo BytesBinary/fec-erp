@@ -28,6 +28,7 @@ class ToolRegistry
         \App\Mcp\Domains\ClearanceTools::class,
         \App\Mcp\Domains\NoticeTools::class,
         \App\Mcp\Domains\AdminTools::class,
+        \App\Mcp\Domains\HelpTools::class,
     ];
 
     /** @var Collection<string, ToolDefinition>|null */

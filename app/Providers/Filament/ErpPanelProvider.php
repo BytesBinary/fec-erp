@@ -110,6 +110,10 @@ class ErpPanelProvider extends PanelProvider
                 EnsureProfileComplete::class,
             ])
             ->renderHook(
+                PanelsRenderHook::BODY_END,
+                fn (): string => Auth::check() ? view('assistant.widget')->render() : '',
+            )
+            ->renderHook(
                 PanelsRenderHook::HEAD_END,
                 fn (): string => $this->themeStyleTag(),
             );

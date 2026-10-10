@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 
 beforeEach(function () {
+    $this->freezeTime();
     seedTestDataset();
 
     $this->user = datasetUser(T::TEACHER);

@@ -85,7 +85,7 @@ it('gives students only self-service, results, clearance and notice tools', func
     $expected = require __DIR__.'/fixtures/role_tool_matrix.php';
 
     foreach ($expected['student'] as $name) {
-        expect($name)->toMatch('/^(me_|result_get_|transcript_get|grading_scale_get|clearance_(check|apply|get_my|resubmit|cancel|get$|verify)|student_list_my_courses|notice_(list|get)|course_(list|get)$|semester_(list|get)|department_(list|get)|program_(list|get)|enrollment_list|hall_list|hall_get|student_get)/');
+        expect($name)->toMatch('/^(me_|result_get_|transcript_get|grading_scale_get|clearance_(check|apply|get_my|resubmit|cancel|get$|verify)|student_list_my_courses|notice_(list|get)|course_(list|get)$|semester_(list|get)|department_(list|get)|program_(list|get)|enrollment_list|hall_list|hall_get|student_get|help_search_features)/');
     }
 
     expect($expected['student'])->not->toContain('user_create', 'result_publish', 'clearance_approve', 'department_create', 'permission_matrix_update', 'audit_log_search');

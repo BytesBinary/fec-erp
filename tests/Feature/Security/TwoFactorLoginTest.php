@@ -49,6 +49,7 @@ function livewireSession(User $user, string $sessionId): UserSession
 }
 
 beforeEach(function () {
+    $this->freezeTime();
     seedTestDataset();
 
     $this->user = datasetUser(T::SUPER_ADMIN);
