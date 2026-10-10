@@ -16,6 +16,7 @@ use App\Models\HallDue;
 use App\Models\HallResidency;
 use App\Models\InstitutionSetting;
 use App\Models\LibraryLoan;
+use App\Models\McpIntegration;
 use App\Models\Program;
 use App\Models\Result;
 use App\Models\RoleScope;
@@ -24,6 +25,7 @@ use App\Models\Student;
 use App\Models\StudentProfile;
 use App\Models\Teacher;
 use App\Models\User;
+use App\Models\UserMfa;
 use App\Services\Audit\AuditLogger;
 use App\Services\Clearance\StaffSignatureService;
 use App\Services\Results\GradingScaleService;
@@ -63,6 +65,18 @@ class TestSeeder extends Seeder
     public function run(): void
     {
         app(AuditLogger::class)->withoutAuditing(function (): void {
+            $this->seedBase();
+            $this->seedSecurityFixtures();
+        });
+    }
+
+    /**
+     * Everything except the test-only security fixtures (those never go into
+     * the demo dataset, spec §10.1).
+     */
+    protected function seedBase(): void
+    {
+        app(AuditLogger::class)->withoutAuditing(function (): void {
             $this->call([PermissionSeeder::class, RoleSeeder::class, \Database\Seeders\GradingScaleSeeder::class, \Database\Seeders\ProfileRequiredFieldSeeder::class]);
             $this->call(\Database\Seeders\ClearanceStageSeeder::class);
 
@@ -81,6 +95,42 @@ class TestSeeder extends Seeder
             $this->seedCampusRecords();
             $this->seedSignatures();
         });
+    }
+
+    /**
+     * A user with 2FA enabled using the fixed, test-only TOTP secret, and a
+     * user with an existing active MCP integration (fixed test-only token).
+     */
+    protected function seedSecurityFixtures(): void
+    {
+        $mfaUser = $this->account(TestDataset::MFA_USER, 'Maliha Rahman', [RoleKey::Teacher]);
+
+        UserMfa::query()->updateOrCreate(['user_id' => $mfaUser->id], [
+            'totp_secret_encrypted' => TestDataset::MFA_SECRET,
+            'enabled_at' => now(),
+            'last_used_step' => null,
+            'failed_attempts' => 0,
+            'locked_until' => null,
+        ]);
+
+        $mcpUser = $this->account(TestDataset::MCP_USER, 'Imran Chowdhury', [RoleKey::Teacher]);
+
+        UserMfa::query()->updateOrCreate(['user_id' => $mcpUser->id], [
+            'totp_secret_encrypted' => TestDataset::MFA_SECRET,
+            'enabled_at' => now(),
+            'last_used_step' => null,
+            'failed_attempts' => 0,
+            'locked_until' => null,
+        ]);
+
+        McpIntegration::query()->updateOrCreate(['token_hash' => hash('sha256', TestDataset::MCP_TOKEN)], [
+            'user_id' => $mcpUser->id,
+            'name' => 'Seeded test integration',
+            'client_type' => 'claude_code',
+            'access_level' => 'full',
+            'token_prefix' => substr(TestDataset::MCP_TOKEN, 0, 12),
+            'expires_at' => now()->addYear(),
+        ]);
     }
 
     protected function seedAcademicStructure(): void
@@ -232,29 +282,37 @@ class TestSeeder extends Seeder
             $student = Student::query()->where('user_id', User::query()->where('email', $email)->value('id'))->firstOrFail();
             $index++;
 
-            $student->update(['phone' => '017000000'.str_pad((string) $index, 2, '0', STR_PAD_LEFT)]);
-
-            StudentProfile::query()->updateOrCreate(['student_id' => $student->id], [
-                'full_name_certificate' => $student->user->name,
-                'father_name' => 'Abdul Karim',
-                'mother_name' => 'Rahima Khatun',
-                'date_of_birth' => '2001-04-12',
-                'email' => $student->user->email,
-                'present_address' => 'House 12, Road 3, Dhaka',
-                'permanent_address' => 'Village Rampur, Bogura',
-                'photo_path' => 'student-photos/test-photo.png',
-                'guardian_name' => 'Abdul Karim',
-                'guardian_phone' => '01800000000',
-                'blood_group' => 'B+',
-                'nid_or_birth_reg' => '19990123456789012',
-                'is_residential' => $hall !== null,
-                'hall_id' => $hall === null ? null : $this->halls[$hall]->id,
-                'emergency_contact_name' => 'Rahima Khatun',
-                'emergency_contact_phone' => '01900000000',
-                'profile_completed_at' => now(),
-                'locked_fields' => null,
-            ]);
+            $this->completeProfile($student, '017000000'.str_pad((string) $index, 2, '0', STR_PAD_LEFT), $hall);
         }
+    }
+
+    /**
+     * A complete, valid profile for `$student`; `$hallCode` null = non-residential.
+     */
+    protected function completeProfile(Student $student, string $phone, ?string $hallCode): void
+    {
+        $student->update(['phone' => $phone]);
+
+        StudentProfile::query()->updateOrCreate(['student_id' => $student->id], [
+            'full_name_certificate' => $student->user->name,
+            'father_name' => 'Abdul Karim',
+            'mother_name' => 'Rahima Khatun',
+            'date_of_birth' => '2001-04-12',
+            'email' => $student->user->email,
+            'present_address' => 'House 12, Road 3, Dhaka',
+            'permanent_address' => 'Village Rampur, Bogura',
+            'photo_path' => 'student-photos/test-photo.png',
+            'guardian_name' => 'Abdul Karim',
+            'guardian_phone' => '01800000000',
+            'blood_group' => 'B+',
+            'nid_or_birth_reg' => '19990123456789012',
+            'is_residential' => $hallCode !== null,
+            'hall_id' => $hallCode === null ? null : $this->halls[$hallCode]->id,
+            'emergency_contact_name' => 'Rahima Khatun',
+            'emergency_contact_phone' => '01900000000',
+            'profile_completed_at' => now(),
+            'locked_fields' => null,
+        ]);
     }
 
     /**
@@ -264,8 +322,6 @@ class TestSeeder extends Seeder
      */
     protected function seedAcademicRecords(): void
     {
-        $scale = app(GradingScaleService::class);
-
         $plan = [
             TestDataset::STUDENT_ELIGIBLE => [
                 ['SP2024', 'CSE-1101', 82, 'regular', 'published'],
@@ -299,32 +355,44 @@ class TestSeeder extends Seeder
         foreach ($plan as $email => $rows) {
             $student = Student::query()->where('user_id', User::query()->where('email', $email)->value('id'))->firstOrFail();
 
-            foreach ($rows as [$semesterCode, $courseCode, $marks, $attempt, $status]) {
-                $course = Course::query()->where('code', $courseCode)->firstOrFail();
-                $semester = Semester::query()->where('code', $semesterCode)->firstOrFail();
+            $this->recordResults($student, $rows);
+        }
+    }
 
-                $offering = CourseOffering::query()->firstOrCreate(
-                    ['course_id' => $course->id, 'semester_id' => $semester->id, 'section' => 'A'],
-                    ['teacher_id' => $course->teachers()->value('teachers.id')],
-                );
+    /**
+     * Creates offerings, enrollments and results for one student.
+     *
+     * @param  list<array{0: string, 1: string, 2: int|float, 3: string, 4: string}>  $rows  semester code, course code, marks, attempt type, result status
+     */
+    protected function recordResults(Student $student, array $rows): void
+    {
+        $scale = app(GradingScaleService::class);
 
-                $enrollment = Enrollment::query()->updateOrCreate(
-                    ['student_id' => $student->id, 'course_offering_id' => $offering->id],
-                    ['attempt_type' => $attempt, 'status' => 'enrolled'],
-                );
+        foreach ($rows as [$semesterCode, $courseCode, $marks, $attempt, $status]) {
+            $course = Course::query()->where('code', $courseCode)->firstOrFail();
+            $semester = Semester::query()->where('code', $semesterCode)->firstOrFail();
 
-                $grade = $scale->gradeFor((float) $marks);
+            $offering = CourseOffering::query()->firstOrCreate(
+                ['course_id' => $course->id, 'semester_id' => $semester->id, 'section' => 'A'],
+                ['teacher_id' => $course->teachers()->value('teachers.id')],
+            );
 
-                Result::query()->updateOrCreate(['enrollment_id' => $enrollment->id], [
-                    'marks' => $marks,
-                    'letter' => $grade['letter'],
-                    'grade_point' => $grade['point'],
-                    'status' => $status,
-                    'submitted_at' => now(),
-                    'approved_at' => in_array($status, ['approved', 'published'], true) ? now() : null,
-                    'published_at' => $status === 'published' ? now() : null,
-                ]);
-            }
+            $enrollment = Enrollment::query()->updateOrCreate(
+                ['student_id' => $student->id, 'course_offering_id' => $offering->id],
+                ['attempt_type' => $attempt, 'status' => 'enrolled'],
+            );
+
+            $grade = $scale->gradeFor((float) $marks);
+
+            Result::query()->updateOrCreate(['enrollment_id' => $enrollment->id], [
+                'marks' => $marks,
+                'letter' => $grade['letter'],
+                'grade_point' => $grade['point'],
+                'status' => $status,
+                'submitted_at' => now(),
+                'approved_at' => in_array($status, ['approved', 'published'], true) ? now() : null,
+                'published_at' => $status === 'published' ? now() : null,
+            ]);
         }
     }
 

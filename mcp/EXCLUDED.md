@@ -31,6 +31,7 @@ Format: one entry per line, `` `Class::method` `` or `` `Class::*` `` or `` `*::
 
 - `App\Services\Audit\AuditLogger::*` — the audit writer itself.
 - `App\Services\Clearance\ApproverResolver::*` — authorization helper used by the clearance service.
+- `App\Services\Clearance\ClearanceReminderService::*` — scheduled reminders, escalation and digest (artisan `clearance:remind-pending`).
 - `App\Services\Clearance\ClearanceNotifier::*` — sends notifications as a side effect of tools.
 - `App\Services\Clearance\ClearancePrintService::*` — renders the printable document in the browser (`clearance_print` records the print and returns its URLs).
 - `App\Services\Clearance\EligibilityChecker::*` — used by `clearance_check_eligibility` and `clearance_apply`.

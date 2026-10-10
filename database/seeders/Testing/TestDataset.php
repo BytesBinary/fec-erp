@@ -64,6 +64,18 @@ final class TestDataset
         self::STUDENT_LIBRARY_LOAN => ['cgpa' => '3.59', 'earned_credits' => 12.0, 'semesters' => ['SP2024' => '4.00', 'FA2024' => '3.35']],
     ];
 
+    /** Teacher with 2FA already enabled (secret below). Test-only, never in the demo seed. */
+    public const MFA_USER = 'mfa.teacher@fec.test';
+
+    /** Fixed test-only TOTP secret of the 2FA users. */
+    public const MFA_SECRET = 'JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP';
+
+    /** Teacher with an existing active MCP integration (token below). */
+    public const MCP_USER = 'mcp.teacher@fec.test';
+
+    /** Fixed test-only bearer token of the seeded integration. */
+    public const MCP_TOKEN = 'erpmcp_TESTSEEDTOKENaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+
     public const DEPT_CSE = 'CSE';
 
     public const DEPT_EEE = 'EEE';
