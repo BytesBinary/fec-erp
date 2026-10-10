@@ -2,16 +2,21 @@
 
 namespace Database\Seeders;
 
+use App\Enums\RoleKey;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Artisan;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
 class RoleSeeder extends Seeder
 {
     /**
-     * Starting roles for this institution's ERP. These are a scaffold, not
-     * a final org chart — adjust permissions live via the Shield "Roles"
+     * Starting legacy roles for this institution's ERP. These are a scaffold,
+     * not a final org chart — adjust permissions live via the Shield "Roles"
      * page in the panel rather than editing this seeder after go-live.
+     *
+     * The RBAC roles (super_admin, admin_office, department_head, …) and their
+     * default permissions are seeded by PermissionSeeder from config/erp.php.
      *
      * @var array<string, list<string>>
      */
@@ -39,15 +44,6 @@ class RoleSeeder extends Seeder
         'Report Viewer' => [
             'View:MasterRoutineReport', 'View:IndividualRoutineReport', 'View:CreditCountReport', 'View:ExamDutyReport',
         ],
-
-        // User-facing roles below are created with no permissions on purpose —
-        // assign their access live via the Shield "Roles" page instead of here.
-        'Principal' => [],
-        'Department Head' => [],
-        'Teacher' => [],
-        'Student' => [],
-        'Librarian' => [],
-        'Hall Provost' => [],
     ];
 
     /**
@@ -55,6 +51,10 @@ class RoleSeeder extends Seeder
      */
     public function run(): void
     {
+        $superAdmin = Role::findOrCreate(RoleKey::SuperAdmin->value, 'web');
+
+        $this->grantAllShieldPermissionsTo($superAdmin);
+
         foreach (self::ROLES as $name => $permissions) {
             $role = Role::firstOrCreate(['name' => $name, 'guard_name' => 'web']);
 
@@ -62,5 +62,43 @@ class RoleSeeder extends Seeder
                 Permission::whereIn('name', $permissions)->get()
             );
         }
+    }
+
+    /**
+     * Permission names Shield generated, kept for the life of the process so
+     * seeding a database many times (tests) does not rediscover every
+     * resource, page and widget each time.
+     *
+     * @var list<string>|null
+     */
+    private static ?array $shieldPermissionNames = null;
+
+    /**
+     * Shield guards every resource, page and widget (including the Roles
+     * screen itself) with a permission. Generate them all and give them to
+     * the super admin, otherwise a freshly seeded database hides the role
+     * editor and the dashboard widgets even from the super admin.
+     */
+    protected function grantAllShieldPermissionsTo(Role $role): void
+    {
+        if (self::$shieldPermissionNames === null) {
+            Artisan::call('shield:generate', [
+                '--all' => true,
+                '--panel' => 'erp',
+                '--option' => 'permissions',
+                '--no-interaction' => true,
+            ]);
+
+            self::$shieldPermissionNames = Permission::query()->where('guard_name', 'web')->pluck('name')->all();
+        } else {
+            $existing = Permission::query()->where('guard_name', 'web')->pluck('name')->all();
+            $missing = array_diff(self::$shieldPermissionNames, $existing);
+
+            if ($missing !== []) {
+                Permission::query()->insert(array_map(fn (string $name): array => ['name' => $name, 'guard_name' => 'web', 'created_at' => now(), 'updated_at' => now()], array_values($missing)));
+            }
+        }
+
+        $role->syncPermissions(Permission::query()->where('guard_name', 'web')->get());
     }
 }

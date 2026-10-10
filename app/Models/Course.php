@@ -3,6 +3,9 @@
 namespace App\Models;
 
 use App\Enums\CourseType;
+use App\Models\Concerns\Auditable;
+use App\Support\Authorization\HasAuthorizationScope;
+use App\Support\Authorization\ResourceScope;
 use Database\Factories\CourseFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,10 +14,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Course extends Model
+class Course extends Model implements HasAuthorizationScope
 {
     /** @use HasFactory<CourseFactory> */
-    use HasFactory, SoftDeletes;
+    use Auditable, HasFactory, SoftDeletes;
 
     protected $fillable = [
         'department_id',
@@ -57,6 +60,11 @@ class Course extends Model
     public function routineSlots(): HasMany
     {
         return $this->hasMany(RoutineSlot::class);
+    }
+
+    public function authorizationScope(): ResourceScope
+    {
+        return ResourceScope::forCourse($this->id, $this->department_id);
     }
 
     protected function casts(): array

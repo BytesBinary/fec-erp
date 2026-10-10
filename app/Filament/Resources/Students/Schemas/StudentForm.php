@@ -57,6 +57,13 @@ class StudentForm
                             ->searchable()
                             ->required()
                             ->columnSpan(1),
+                        TextInput::make('admission_year')
+                            ->label('Admission Year')
+                            ->helperText('Used to look up the right exams on the university result portal. Leave empty to use the batch session start year.')
+                            ->numeric()
+                            ->minValue(1990)
+                            ->maxValue((int) date('Y') + 1)
+                            ->columnSpan(1),
                         TextInput::make('roll_number')
                             ->label('Roll Number')
                             ->required()

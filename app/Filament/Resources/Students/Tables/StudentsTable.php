@@ -45,6 +45,11 @@ class StudentsTable
                     ->label('Semester')
                     ->formatStateUsing(fn (int $state): string => "Sem {$state}")
                     ->sortable(),
+                TextColumn::make('admission_year')
+                    ->label('Admission')
+                    ->placeholder('—')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('registration_number')
                     ->label('Registration No.')
                     ->searchable()

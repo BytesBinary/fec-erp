@@ -4,6 +4,11 @@ namespace App\Providers\Filament;
 
 use App\Enums\ThemePreset;
 use App\Filament\Pages\Auth\EditProfile;
+use App\Filament\Pages\Auth\TwoFactorChallenge;
+use App\Http\Middleware\EnforceRoleTwoFactorSetup;
+use App\Http\Middleware\EnsureProfileComplete;
+use App\Http\Middleware\EnsureTwoFactorChallengePassed;
+use App\Http\Middleware\TrackUserSession;
 use App\Models\InstitutionSetting;
 use App\Models\User;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
@@ -25,6 +30,7 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
@@ -59,7 +65,11 @@ class ErpPanelProvider extends PanelProvider
                 'Routine',
                 'Manage Exams',
                 'Academic',
+                'Clearance',
+                'Campus',
                 'Settings',
+                'My Account',
+                'Security & Access',
             ])
             ->sidebarCollapsibleOnDesktop(true)
             ->brandName(fn (): string => InstitutionSetting::current()->institution_name ?? 'ERP')
@@ -74,6 +84,9 @@ class ErpPanelProvider extends PanelProvider
             ->pages([
                 Dashboard::class,
             ])
+            ->authenticatedRoutes(function (): void {
+                Route::get('/two-factor-challenge', TwoFactorChallenge::class)->name('auth.two-factor-challenge');
+            })
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([])
             ->middleware([
@@ -90,9 +103,18 @@ class ErpPanelProvider extends PanelProvider
             ->plugins([
                 FilamentShieldPlugin::make(),
             ])
+            ->databaseNotifications()
             ->authMiddleware([
+                TrackUserSession::class,
                 Authenticate::class,
-            ])
+                EnsureTwoFactorChallengePassed::class,
+                EnforceRoleTwoFactorSetup::class,
+                EnsureProfileComplete::class,
+            ], isPersistent: true)
+            ->renderHook(
+                PanelsRenderHook::BODY_END,
+                fn (): string => Auth::check() ? view('assistant.widget')->render() : '',
+            )
             ->renderHook(
                 PanelsRenderHook::HEAD_END,
                 fn (): string => $this->themeStyleTag(),

@@ -3,12 +3,15 @@
 namespace Database\Seeders;
 
 use App\Enums\DesignationType;
+use App\Enums\ScopeType;
 use App\Models\Department;
 use App\Models\Designation;
+use App\Models\RoleScope;
 use App\Models\Teacher;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
 
 class TeacherSeeder extends Seeder
 {
@@ -58,14 +61,15 @@ class TeacherSeeder extends Seeder
     ];
 
     /**
-     * Designation name to Spatie role name. Designations not listed here
-     * (regular teaching designations) fall back to the base 'Teacher' role.
+     * Designation name to role keys. Designations not listed here (regular
+     * teaching designations) fall back to the base 'teacher' role. A
+     * department head is also a teacher and is scoped to their department.
      *
-     * @var array<string, string>
+     * @var array<string, list<string>>
      */
     private const DESIGNATION_ROLES = [
-        'Principal' => 'Principal',
-        'Department Head' => 'Department Head',
+        'Principal' => ['principal'],
+        'Department Head' => ['department_head', 'teacher'],
     ];
 
     public function run(): void
@@ -103,7 +107,16 @@ class TeacherSeeder extends Seeder
                     ]
                 );
 
-                $user->syncRoles(self::DESIGNATION_ROLES[$designationName] ?? 'Teacher');
+                $user->syncRoles(self::DESIGNATION_ROLES[$designationName] ?? ['teacher']);
+
+                if ($user->hasRole('department_head')) {
+                    RoleScope::firstOrCreate([
+                        'user_id' => $user->id,
+                        'role_id' => Role::findByName('department_head', 'web')->id,
+                        'scope_type' => ScopeType::Department->value,
+                        'scope_id' => $departmentId,
+                    ]);
+                }
             }
         }
     }

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Students;
 
+use App\Filament\Concerns\ScopesListToActor;
 use App\Filament\Resources\Students\Pages\CreateStudent;
 use App\Filament\Resources\Students\Pages\EditStudent;
 use App\Filament\Resources\Students\Pages\ListStudents;
@@ -19,6 +20,8 @@ use UnitEnum;
 
 class StudentResource extends Resource
 {
+    use ScopesListToActor;
+
     protected static ?string $model = Student::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUsers;
@@ -34,7 +37,8 @@ class StudentResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return StudentsTable::configure($table);
+        return StudentsTable::configure($table)
+            ->modifyQueryUsing(fn (Builder $query): Builder => static::scopeListQuery($query));
     }
 
     public static function getRelations(): array
@@ -57,5 +61,10 @@ class StudentResource extends Resource
             'create' => CreateStudent::route('/create'),
             'edit' => EditStudent::route('/{record}/edit'),
         ];
+    }
+
+    protected static function listPermission(): string
+    {
+        return 'student:list';
     }
 }

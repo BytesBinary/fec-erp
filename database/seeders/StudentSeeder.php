@@ -78,7 +78,7 @@ class StudentSeeder extends Seeder
                     ]
                 );
 
-                $user->syncRoles('Student');
+                $user->syncRoles('student');
             }
         }
     }

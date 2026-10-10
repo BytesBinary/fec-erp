@@ -92,7 +92,7 @@
 }
 
 .fi-sidebar-item.fi-active > .fi-sidebar-item-btn {
-    background-color: var(--primary-600) !important;
+    background-color: var(--primary-800) !important;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
@@ -290,4 +290,110 @@
 .fi-simple-main {
     border: 1px solid var(--erp-hairline);
     box-shadow: 0 8px 24px color-mix(in srgb, var(--erp-nav) 8%, transparent);
+}
+
+/* Accessible contrast for the upload "Browse" link on white backgrounds. */
+.filepond--label-action {
+    color: var(--primary-700) !important;
+}
+
+/* ── Hand-written form controls (pages that are not Filament forms) ──
+   Make it obvious where the user can type or choose: visible border, filled
+   background, clear focus ring, and a plainly "disabled" look. ── */
+
+.erp-field {
+    display: block;
+    width: 100%;
+    min-width: 12rem;
+    max-width: 28rem;
+    margin-top: 0.25rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 400;
+    line-height: 1.25rem;
+    color: #111827;
+    background-color: #fff;
+    border: 1px solid #6b7280;
+    border-radius: var(--erp-control-radius);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.erp-field::placeholder {
+    color: #6b7280;
+}
+
+.erp-field:hover {
+    border-color: #374151;
+}
+
+.erp-field:focus {
+    outline: 2px solid var(--primary-600);
+    outline-offset: 1px;
+    border-color: var(--primary-600);
+}
+
+.erp-field:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+    background-color: #f3f4f6;
+}
+
+.erp-field[type='number'] {
+    max-width: 8rem;
+    min-width: 6rem;
+}
+
+:where(.dark, .dark *) .erp-field {
+    color: #f3f4f6;
+    background-color: #111827;
+    border-color: #9ca3af;
+}
+
+:where(.dark, .dark *) .erp-field::placeholder {
+    color: #9ca3af;
+}
+
+:where(.dark, .dark *) .erp-field:hover {
+    border-color: #e5e7eb;
+}
+
+:where(.dark, .dark *) .erp-field:disabled {
+    background-color: #1f2937;
+}
+
+.erp-check {
+    width: 1.1rem;
+    height: 1.1rem;
+    accent-color: var(--primary-700);
+}
+
+.erp-field-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.erp-form-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 1rem;
+}
+
+/* Breadcrumb links: the default grey is below 4.5:1 on the cream background. */
+.fi-breadcrumbs-item-label {
+    color: #57534e;
+}
+
+:where(.dark, .dark *) .fi-breadcrumbs-item-label {
+    color: #d6d3d1;
+}
+
+/* Empty-cell placeholders ("—", "Default text"): the default light grey fails 4.5:1. */
+.fi-ta-placeholder {
+    color: #57534e;
+}
+
+:where(.dark, .dark *) .fi-ta-placeholder {
+    color: #d6d3d1;
 }

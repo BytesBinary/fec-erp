@@ -12,8 +12,22 @@
 */
 
 pest()->extend(Tests\TestCase::class)
- // ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
+    ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
     ->in('Feature');
+
+pest()->extend(Tests\TestCase::class)
+    ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
+    ->in('Unit/Authorization');
+
+pest()->extend(Tests\TestCase::class)
+    ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
+    ->in('Mcp');
+
+pest()->extend(Tests\BrowserTestCase::class)
+    ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
+    ->in('Browser');
+
+pest()->browser()->timeout(15000);
 
 /*
 |--------------------------------------------------------------------------
@@ -41,7 +55,127 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+/**
+ * Seed the deterministic `seed:test` dataset (spec §10.1).
+ */
+function seedTestDataset(): void
 {
-    // ..
+    test()->seed(Database\Seeders\Testing\TestSeeder::class);
+}
+
+/**
+ * A seeded account by e-mail (see Database\Seeders\Testing\TestDataset).
+ */
+function datasetUser(string $email): App\Models\User
+{
+    return App\Models\User::query()->where('email', $email)->firstOrFail();
+}
+
+function authorizer(): App\Support\Authorization\Authorizer
+{
+    return app(App\Support\Authorization\Authorizer::class);
+}
+
+/**
+ * The authenticator code for `$secret`, `$stepOffset` 30-second steps away from now.
+ */
+function totpCode(string $secret, int $stepOffset = 0): string
+{
+    $step = intdiv(now()->getTimestamp(), 30) + $stepOffset;
+
+    return app(PragmaRX\Google2FA\Google2FA::class)->oathTotp($secret, $step);
+}
+
+/**
+ * Turns 2FA on for `$user` with `$secret`, bypassing the setup UI.
+ *
+ * @return list<string> plain recovery codes
+ */
+function enableTwoFactorFor(App\Models\User $user, string $secret = 'JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP'): array
+{
+    $service = app(App\Services\Security\TwoFactorService::class);
+
+    App\Models\UserMfa::query()->updateOrCreate(
+        ['user_id' => $user->id],
+        ['totp_secret_encrypted' => $secret, 'enabled_at' => now(), 'last_used_step' => null, 'failed_attempts' => 0, 'locked_until' => null],
+    );
+
+    return app(App\Services\Security\RecoveryCodeService::class)->generate($user);
+}
+
+/**
+ * Logs in through the real login form in a fresh browser context and returns the page.
+ */
+function uiLogin(string $email, string $password = 'password'): Pest\Browser\Api\AwaitableWebpage
+{
+    return visit('/login')
+        ->type('[id="form.email"]', $email)
+        ->type('[id="form.password"]', $password)
+        ->click('button[type=submit]')
+        ->wait(2);
+}
+
+/**
+ * Signs out through the user menu of the current page.
+ */
+function uiLogout(Pest\Browser\Api\AwaitableWebpage $page): Pest\Browser\Api\AwaitableWebpage
+{
+    return $page->click('.fi-user-menu-trigger')->wait(1)->click('Sign out')->wait(2);
+}
+
+/**
+ * The student model behind a seeded account.
+ */
+function studentFor(string $email): App\Models\Student
+{
+    return App\Models\Student::query()->where('user_id', datasetUser($email)->id)->firstOrFail();
+}
+
+/**
+ * A seeded student applies for clearance; returns the request.
+ */
+function applyForClearance(string $email = Database\Seeders\Testing\TestDataset::STUDENT_ELIGIBLE): App\Models\ClearanceRequest
+{
+    return app(App\Services\Clearance\ClearanceService::class)->apply(datasetUser($email));
+}
+
+/**
+ * Walks a request through the given approver accounts, in order.
+ *
+ * @param  list<string>  $approverEmails
+ */
+function approveInOrder(App\Models\ClearanceRequest $request, array $approverEmails): App\Models\ClearanceRequest
+{
+    foreach ($approverEmails as $email) {
+        $request = app(App\Services\Clearance\ClearanceService::class)->approve(datasetUser($email), $request->id);
+    }
+
+    return $request;
+}
+
+/**
+ * Enables 2FA for `$user` (if needed) and creates an MCP integration through the
+ * real service, including the step-up code. Returns the plain bearer token.
+ *
+ * @return array{token: string, integration: App\Models\McpIntegration}
+ */
+function mcpIntegrationFor(App\Models\User $user, string $access = 'full', ?int $days = 90, string $client = 'claude_code'): array
+{
+    $secret = 'JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP';
+
+    if (! app(App\Services\Security\TwoFactorService::class)->isEnabled($user)) {
+        enableTwoFactorFor($user, $secret);
+    }
+
+    App\Models\UserMfa::query()->where('user_id', $user->id)->update(['last_used_step' => null]);
+
+    return app(App\Services\Mcp\IntegrationService::class)->create($user, 'Test '.$client, $client, $access, $days, totpCode($secret));
+}
+
+/**
+ * A saved (anonymised) answer of the university result portal.
+ */
+function portalFixture(string $name): string
+{
+    return file_get_contents(base_path("tests/Fixtures/portal/{$name}.html"));
 }

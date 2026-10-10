@@ -1,0 +1,5 @@
+FEC ERP autopilot run complete (2026-10-10); branch autopilot/erp-features, nothing pushed.
+Phases 0, 1, 1S, 2, 3, 4, 5, 5M, 6, 7 built, verified and committed; review and report done.
+Final verify.sh: ALL CHECKS PASSED (Unit 86, Feature 383, Mcp 82, Browser 27).
+Independent reviews (security; spec coverage) in docs/REVIEW.md, fixes tested; open items listed there.
+Start commands, URL and demo logins for every role: MORNING_REPORT.md.

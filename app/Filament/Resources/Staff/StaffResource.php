@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Staff;
 
+use App\Filament\Concerns\ScopesListToActor;
 use App\Filament\Resources\Staff\Pages\CreateStaff;
 use App\Filament\Resources\Staff\Pages\EditStaff;
 use App\Filament\Resources\Staff\Pages\ListStaff;
@@ -19,6 +20,8 @@ use UnitEnum;
 
 class StaffResource extends Resource
 {
+    use ScopesListToActor;
+
     protected static ?string $model = Staff::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBriefcase;
@@ -34,7 +37,8 @@ class StaffResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return StaffTable::configure($table);
+        return StaffTable::configure($table)
+            ->modifyQueryUsing(fn (Builder $query): Builder => static::scopeListQuery($query));
     }
 
     public static function getRelations(): array
@@ -55,5 +59,10 @@ class StaffResource extends Resource
             'create' => CreateStaff::route('/create'),
             'edit' => EditStaff::route('/{record}/edit'),
         ];
+    }
+
+    protected static function listPermission(): string
+    {
+        return 'staff:list';
     }
 }
