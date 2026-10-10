@@ -40,9 +40,9 @@ Run all checks: `.autopilot/verify.sh` (deps, build, migrate+seed on SQLite, Pin
 
 The 2FA and MCP-token fixtures (`mfa.teacher`, `mcp.teacher`, the seeded token) exist for tests. They are also in the demo seed, so never run `seed:demo` against real data.
 
-## Test results (last full `.autopilot/verify.sh`: see final run in the conversation)
+## Test results
 
-Last counts seen: Unit 86, Feature 381+, Mcp 82, Browser 27, all passing. Static analysis is not configured (skipped).
+Final full `.autopilot/verify.sh` (2026-10-10): **RESULT: ALL CHECKS PASSED**, exit 0. Unit 86, Feature 383, Mcp 82, Browser 27 (all passing). Static analysis is not configured (skipped).
 
 ## Five-minute click-through
 
