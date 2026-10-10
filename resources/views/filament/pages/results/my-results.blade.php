@@ -52,4 +52,40 @@
     @empty
         <x-filament::section><p class="text-sm text-gray-500">{{ __('erp.results.empty') }}</p></x-filament::section>
     @endforelse
+
+    @php($portalResults = $this->portalResults())
+    @if ($portalResults->isNotEmpty())
+        <x-filament::section heading="Official results (exam portal)" description="Pulled automatically from the university exam portal. A grade marked Improved, Retake or Declined replaced an earlier attempt." data-testid="portal-results">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead>
+                        <tr class="border-b border-gray-200 dark:border-white/10">
+                            <th class="py-2 pr-4" scope="col">Course</th>
+                            <th class="py-2 pr-4" scope="col">Grade</th>
+                            <th class="py-2 pr-4" scope="col">Grade point</th>
+                            <th class="py-2 pr-4" scope="col">Update</th>
+                            <th class="py-2" scope="col">Exam</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($portalResults as $row)
+                            <tr class="border-b border-gray-100 dark:border-white/5" data-testid="portal-result-row">
+                                <td class="py-2 pr-4">{{ $row->course_code }}@if ($row->course_title) <span class="text-xs text-gray-500">{{ $row->course_title }}</span>@endif</td>
+                                <td class="py-2 pr-4">{{ $row->letter }}</td>
+                                <td class="py-2 pr-4">{{ number_format((float) $row->grade_point, 2) }}</td>
+                                <td class="py-2 pr-4">
+                                    @if ($row->change_type)
+                                        <x-filament::badge :color="$row->change_type->color()" data-testid="portal-change">{{ $row->change_type->label() }} ({{ $row->previous_letter }} → {{ $row->letter }})</x-filament::badge>
+                                    @else
+                                        —
+                                    @endif
+                                </td>
+                                <td class="py-2 text-xs text-gray-500">{{ $row->exam_title }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </x-filament::section>
+    @endif
 </x-filament-panels::page>

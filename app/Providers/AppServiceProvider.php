@@ -6,7 +6,9 @@ use App\Events\McpIntegrationsStopRequested;
 use App\Events\TwoFactorDeactivated;
 use App\Listeners\RecordRoleAndPermissionChanges;
 use App\Listeners\RememberLoginPreference;
+use App\Models\Student;
 use App\Models\User;
+use App\Observers\StudentObserver;
 use App\Observers\UserPasswordObserver;
 use App\Policies\RolePolicy;
 use App\Services\Assistant\Contracts\AssistantProvider;
@@ -16,6 +18,8 @@ use App\Services\Audit\AuditLogger;
 use App\Services\Mcp\IntegrationService;
 use App\Services\Notifications\Contracts\ExternalMessenger;
 use App\Services\Notifications\LogMessenger;
+use App\Services\ResultPortal\Contracts\ResultSource;
+use App\Services\ResultPortal\DuPortalResultSource;
 use App\Support\Authorization\Authorizer;
 use App\Support\Authorization\PermissionCatalog;
 use App\Support\RequestContext;
@@ -40,6 +44,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(PermissionCatalog::class);
         $this->app->scoped(Authorizer::class);
         $this->app->bind(ExternalMessenger::class, LogMessenger::class);
+        $this->app->bind(ResultSource::class, DuPortalResultSource::class);
         $this->app->singleton(\PragmaRX\Google2FA\Google2FA::class);
         $this->app->bind(AssistantProvider::class, fn () => config('assistant.provider') === 'fake' ? new FakeProvider : new ClaudeProvider);
     }
@@ -49,6 +54,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Student::observe(StudentObserver::class);
+
         Gate::policy(Role::class, RolePolicy::class);
 
         Event::subscribe(RecordRoleAndPermissionChanges::class);

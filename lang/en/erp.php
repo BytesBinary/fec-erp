@@ -95,6 +95,7 @@ return [
             'pending' => 'Pending',
             'rejected' => 'Rejected',
             'skipped' => 'Skipped',
+            'pending' => 'Waiting for result',
             'waiting' => 'Waiting',
         ],
         'ready_message' => 'Your clearance is complete and ready. Visit the Administration Office once, with your student ID, to collect your sealed copy.',
@@ -303,5 +304,30 @@ return [
         'admin_revoke_all' => 'Log out everywhere',
         'admin_reset_2fa' => 'Reset 2FA',
         'admin_reason' => 'Reason',
+    ],
+
+    'result_pull' => [
+        'navigation_label' => 'Student results',
+        'model_label' => 'result pull',
+        'plural_model_label' => 'Student results',
+        'statuses' => [
+            'queued' => 'Waiting',
+            'running' => 'Running',
+            'success' => 'Success',
+            'failed' => 'Failed',
+            'skipped' => 'Skipped',
+        ],
+        'changes' => [
+            'improved' => 'Improved',
+            'retake' => 'Retake',
+            'declined' => 'Declined',
+            'same' => 'Same grade',
+        ],
+        'triggers' => [
+            'student_created' => 'Student added',
+            'registration_changed' => 'Registration no. changed',
+            'retry' => 'Retried',
+            'manual' => 'Manual',
+        ],
     ],
 ];

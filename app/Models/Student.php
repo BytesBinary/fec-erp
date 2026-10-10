@@ -22,6 +22,7 @@ class Student extends Model implements HasAuthorizationScope
         'department_id',
         'program_id',
         'batch_id',
+        'admission_year',
         'roll_number',
         'registration_number',
         'current_semester',
@@ -51,6 +52,31 @@ class Student extends Model implements HasAuthorizationScope
     public function profile(): HasOne
     {
         return $this->hasOne(StudentProfile::class);
+    }
+
+    /**
+     * The year the student was admitted: the entered value, else the start
+     * year of the batch session ("2022-2023" → 2022).
+     */
+    public function admissionYear(): ?int
+    {
+        if ($this->admission_year !== null) {
+            return (int) $this->admission_year;
+        }
+
+        $session = (string) $this->batch?->session;
+
+        return preg_match('/^(\d{4})/', $session, $match) === 1 ? (int) $match[1] : null;
+    }
+
+    public function portalResults(): HasMany
+    {
+        return $this->hasMany(PortalResult::class)->orderBy('course_code')->orderBy('portal_exam_id');
+    }
+
+    public function resultPulls(): HasMany
+    {
+        return $this->hasMany(ResultPull::class);
     }
 
     public function enrollments(): HasMany

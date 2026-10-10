@@ -171,3 +171,11 @@ function mcpIntegrationFor(App\Models\User $user, string $access = 'full', ?int 
 
     return app(App\Services\Mcp\IntegrationService::class)->create($user, 'Test '.$client, $client, $access, $days, totpCode($secret));
 }
+
+/**
+ * A saved (anonymised) answer of the university result portal.
+ */
+function portalFixture(string $name): string
+{
+    return file_get_contents(base_path("tests/Fixtures/portal/{$name}.html"));
+}

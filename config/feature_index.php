@@ -178,6 +178,19 @@ return [
             'permission' => 'profile_field:manage',
             'steps' => [],
         ],
+        'App\\Filament\\Resources\\ResultPulls\\ResultPullResource' => [
+            'description' => 'See which students\' official results were pulled from the university exam portal, which succeeded or failed (with the reason), and retry the failed ones.',
+            'keywords' => ['student results', 'pull', 'portal', 'official result', 'failed', 'retry', 'sync', 'exam portal'],
+            'permission' => 'result_pull:list',
+            'steps' => ['Open Student results in the Academic menu.', 'Use the Failed tab to see which students could not be pulled.', 'Click Retry on a row, or Retry all failed.'],
+        ],
+
+        'App\\Filament\\Pages\\Portal\\PortalMonitor' => [
+            'description' => 'Monitor the university result portal: the saved exam list, the daily check for newly published results, confirmed publications and the student pulls they started.',
+            'keywords' => ['portal', 'result portal', 'exam list', 'publication', 'new results', 'sync', 'check', 'monitor', 'shadow'],
+            'permission' => 'portal_monitor:view',
+            'steps' => ['Open Portal monitor in the Academic menu.', 'First time: press First-time sync to save the exam list.', 'Press Check for new results to look for newly published exams.', 'Press Run now on a confirmed publication to pull the students.'],
+        ],
         'App\\Filament\\Resources\\AuditLogs\\AuditLogResource' => [
             'description' => 'Who changed what, from web, MCP or the assistant.',
             'keywords' => ['audit', 'log', 'history', 'changes', 'who', 'activity'],

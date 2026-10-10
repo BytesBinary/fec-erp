@@ -131,6 +131,11 @@ return [
 
             'audit_log:view' => 'View the audit log',
 
+            'portal_monitor:view' => 'See the result portal monitor (exam list, daily check, publications)',
+            'portal_monitor:manage' => 'Sync the exam list, run the daily check and start publication pulls',
+            'result_pull:list' => 'See which students\' official results were pulled (success / failed)',
+            'result_pull:retry' => 'Retry failed result pulls',
+
             'profile:update_own' => 'Complete and update own student profile',
             'profile:view' => 'View student profiles',
             'profile:update' => 'Edit student profiles (including locked fields)',
@@ -177,6 +182,7 @@ return [
          */
         'matrix' => [
             'admin_office' => [
+                'result_pull:list', 'result_pull:retry', 'portal_monitor:view', 'portal_monitor:manage',
                 'department:list', 'department:view', 'program:list', 'program:view',
                 'semester:list', 'semester:view', 'course:list', 'course:view',
                 'batch:list', 'batch:view', 'student:list', 'student:view',
@@ -202,6 +208,7 @@ return [
                 'result:view', 'clearance:view', 'notice:list', 'notice:view',
             ],
             'department_head' => [
+                'result_pull:list', 'result_pull:retry',
                 'department:list', 'department:view', 'program:list', 'program:view',
                 'semester:list', 'semester:view',
                 'course:list', 'course:view', 'course:create', 'course:update', 'course:assign_teacher',

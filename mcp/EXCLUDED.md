@@ -69,3 +69,19 @@ Format: one entry per line, `` `Class::method` `` or `` `Class::*` `` or `` `*::
 - `*::query` — returns an Eloquent builder (not a user operation); list tools wrap it.
 - `*::permission` — internal permission-name helper.
 - `App\Services\RoutineGeneratorService::*` — legacy routine generator has no actor/authorization; it stays in the web UI until it is refactored onto the service pattern.
+
+## Result portal pulls
+
+- `App\Services\ResultPortal\ResultPullService::queueFor` — called automatically when a student is added (by the model observer, so panel, MCP and assistant all trigger it); staff retry through `result_pull_retry`.
+- `App\Services\ResultPortal\PortalResultImporter::*` — internal: stores parsed portal rows.
+- `App\Services\ResultPortal\ResultPullRunner::*` — internal: runs one queued pull.
+- `App\Services\ResultPortal\PortalClient::*` — internal HTTP client of the portal.
+- `App\Services\ResultPortal\DuPortalResultSource::*` — internal portal adapter.
+- `App\Services\ResultPortal\DuResultParser::*` — internal HTML parser.
+- `App\Services\ResultPortal\ExamCatalog::*` — internal exam drop-down parser.
+- `App\Services\ResultPortal\ExamCatalogSync::*` — internal: called by `portal_catalog_sync` / the daily check.
+- `App\Services\ResultPortal\PublicationDetector::*` — internal: called by `portal_check_run` / `portal_publication_run` and the scheduler.
+- `App\Services\ResultPortal\ProbeSelector::*` — internal: chooses probe students.
+- `App\Services\ResultPortal\EligibleStudents::*` — internal: which students an exam applies to.
+- `App\Services\ResultPortal\ExamWindow::*` — internal: admission-year window rule.
+- `App\Services\ResultPortal\PortalPage::*` — internal value object of the result parser.

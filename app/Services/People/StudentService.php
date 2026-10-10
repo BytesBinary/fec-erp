@@ -35,6 +35,7 @@ class StudentService extends PersonService
             'department_id' => ['required', 'integer', Rule::exists('departments', 'id')],
             'program_id' => ['nullable', 'integer', Rule::exists('programs', 'id')],
             'batch_id' => ['required', 'integer', Rule::exists('batches', 'id')],
+            'admission_year' => ['nullable', 'integer', 'between:1990,'.((int) date('Y') + 1)],
             'roll_number' => ['required', 'string', 'max:50', Rule::unique('students', 'roll_number')->ignore($record?->getKey())],
             'registration_number' => ['required', 'string', 'max:50', Rule::unique('students', 'registration_number')->ignore($record?->getKey())],
             'current_semester' => ['required', 'integer', 'between:1,8'],
