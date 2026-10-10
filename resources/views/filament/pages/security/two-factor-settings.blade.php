@@ -22,7 +22,7 @@
                     </button>
                 </div>
                 <label class="flex items-center gap-2 text-sm">
-                    <input type="checkbox" wire:model.live="savedRecoveryCodes" id="saved-recovery-codes" class="rounded border-gray-300" />
+                    <input type="checkbox" wire:model.live="savedRecoveryCodes" id="saved-recovery-codes" class="erp-check" />
                     {{ __('erp.security.saved_codes_checkbox') }}
                 </label>
                 <x-filament::button wire:click="finishRecoveryCodes" :disabled="! $savedRecoveryCodes" id="finish-recovery-codes">
@@ -53,7 +53,7 @@
                 <form wire:submit.prevent="confirmSetup" class="space-y-3">
                     <label class="block text-sm font-medium" for="confirmation-code">{{ __('erp.security.confirm_code_label') }}</label>
                     <input id="confirmation-code" type="text" inputmode="numeric" autocomplete="one-time-code" wire:model="confirmationCode"
-                           class="fi-input block w-48 rounded-lg border-gray-300 text-sm" />
+                           class="erp-field" />
                     @error('confirmationCode') <p class="text-sm text-danger-600" data-testid="confirmation-error">{{ $message }}</p> @enderror
                     <div class="flex gap-3">
                         <x-filament::button type="submit" id="confirm-two-factor">{{ __('erp.security.enable') }}</x-filament::button>

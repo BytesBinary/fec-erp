@@ -1,9 +1,9 @@
 <x-filament-panels::page>
     <x-filament::section heading="Issue a book">
         <form wire:submit="issue" class="flex flex-wrap items-end gap-3">
-            <label class="text-sm">Roll number<input type="text" wire:model="roll" class="mt-1 block rounded-lg border-gray-300 text-sm" required /></label>
-            <label class="text-sm">Book title<input type="text" wire:model="bookTitle" class="mt-1 block rounded-lg border-gray-300 text-sm" required /></label>
-            <label class="text-sm">Due on<input type="date" wire:model="dueOn" class="mt-1 block rounded-lg border-gray-300 text-sm" /></label>
+            <label class="erp-field-label">Roll number<input type="text" wire:model="roll" class="erp-field" required /></label>
+            <label class="erp-field-label">Book title<input type="text" wire:model="bookTitle" class="erp-field" required /></label>
+            <label class="erp-field-label">Due on<input type="date" wire:model="dueOn" class="erp-field" /></label>
             <x-filament::button type="submit">Issue</x-filament::button>
         </form>
     </x-filament::section>

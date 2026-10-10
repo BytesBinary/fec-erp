@@ -75,7 +75,7 @@
                         <legend class="mb-2 text-sm font-medium">{{ __('erp.mcp.choose_client') }}</legend>
                         @foreach ($this->clients() as $key => $client)
                             <label class="flex cursor-pointer items-start gap-3 rounded-lg border p-3 {{ $clientType === $key ? 'border-primary-600' : 'border-gray-200' }}">
-                                <input type="radio" name="client" value="{{ $key }}" wire:click="chooseClient('{{ $key }}')" @checked($clientType === $key) class="mt-1" />
+                                <input type="radio" name="client" value="{{ $key }}" wire:click="chooseClient('{{ $key }}')" @checked($clientType === $key) class="erp-check mt-1" />
                                 <span><span class="block font-medium">{{ $client['label'] }}</span><span class="text-sm text-gray-500">{{ $client['description'] }}</span></span>
                             </label>
                         @endforeach
@@ -83,15 +83,15 @@
                 @elseif ($step === 2)
                     <div class="space-y-4">
                         <label class="block text-sm font-medium">{{ __('erp.mcp.name') }}
-                            <input id="integration-name" type="text" wire:model="integrationName" maxlength="120" class="mt-1 block w-full max-w-md rounded-lg border-gray-300 text-sm" />
+                            <input id="integration-name" type="text" wire:model="integrationName" maxlength="120" class="erp-field" />
                         </label>
                         <fieldset>
                             <legend class="text-sm font-medium">{{ __('erp.mcp.access') }}</legend>
-                            <label class="mt-1 flex items-center gap-2 text-sm"><input type="radio" wire:model="accessLevel" value="full" /> {{ __('erp.mcp.access_full') }}</label>
-                            <label class="flex items-center gap-2 text-sm"><input type="radio" wire:model="accessLevel" value="read_only" id="access-read-only" /> {{ __('erp.mcp.access_read_only') }}</label>
+                            <label class="mt-1 flex items-center gap-2 text-sm"><input type="radio" wire:model="accessLevel" value="full" class="erp-check" /> {{ __('erp.mcp.access_full') }}</label>
+                            <label class="flex items-center gap-2 text-sm"><input type="radio" wire:model="accessLevel" value="read_only" id="access-read-only" class="erp-check" /> {{ __('erp.mcp.access_read_only') }}</label>
                         </fieldset>
                         <label class="block text-sm font-medium">{{ __('erp.mcp.expiry') }}
-                            <select id="expiry" wire:model="expiresInDays" class="mt-1 block rounded-lg border-gray-300 text-sm">
+                            <select id="expiry" wire:model="expiresInDays" class="erp-field">
                                 @foreach ($this->expiryOptions() as $days => $label)<option value="{{ $days }}">{{ $label }}</option>@endforeach
                             </select>
                         </label>
@@ -100,7 +100,7 @@
                     <div class="space-y-3">
                         <p class="text-sm">{{ __('erp.mcp.confirm_help') }}</p>
                         <label class="block text-sm font-medium">{{ __('erp.mcp.code') }}
-                            <input id="totp-code" type="text" inputmode="numeric" autocomplete="one-time-code" wire:model="totpCode" class="mt-1 block w-48 rounded-lg border-gray-300 text-sm" />
+                            <input id="totp-code" type="text" inputmode="numeric" autocomplete="one-time-code" wire:model="totpCode" class="erp-field" />
                         </label>
                     </div>
                 @elseif ($step === 4)

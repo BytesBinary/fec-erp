@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Enums\RoleKey;
+use BezhanSalleh\FilamentShield\Facades\FilamentShield;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -50,7 +51,9 @@ class RoleSeeder extends Seeder
      */
     public function run(): void
     {
-        Role::findOrCreate(RoleKey::SuperAdmin->value, 'web');
+        $superAdmin = Role::findOrCreate(RoleKey::SuperAdmin->value, 'web');
+
+        $this->grantDashboardWidgetsTo($superAdmin);
 
         foreach (self::ROLES as $name => $permissions) {
             $role = Role::firstOrCreate(['name' => $name, 'guard_name' => 'web']);
@@ -59,5 +62,22 @@ class RoleSeeder extends Seeder
                 Permission::whereIn('name', $permissions)->get()
             );
         }
+    }
+
+    /**
+     * The dashboard widgets are Shield-guarded; without their permissions the
+     * super admin would see an empty dashboard on a freshly seeded database.
+     */
+    protected function grantDashboardWidgetsTo(Role $role): void
+    {
+        $names = collect(FilamentShield::getWidgets() ?? [])
+            ->flatMap(fn (array $widget): array => array_keys($widget['permissions'] ?? []))
+            ->all();
+
+        $permissions = collect($names)->map(
+            fn (string $name): Permission => Permission::findOrCreate($name, 'web')
+        );
+
+        $role->givePermissionTo($permissions->all());
     }
 }

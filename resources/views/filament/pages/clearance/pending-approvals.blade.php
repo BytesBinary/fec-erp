@@ -12,11 +12,11 @@
         <div class="flex flex-wrap gap-4">
             <div>
                 <label class="block text-sm font-medium" for="search">Search</label>
-                <input id="search" type="search" wire:model.live.debounce.300ms="search" class="mt-1 rounded-lg border-gray-300 text-sm" placeholder="Name, roll or request no." />
+                <input id="search" type="search" wire:model.live.debounce.300ms="search" class="erp-field" placeholder="Name, roll or request no." />
             </div>
             <div>
                 <label class="block text-sm font-medium" for="department">Department</label>
-                <select id="department" wire:model.live="departmentId" class="mt-1 rounded-lg border-gray-300 text-sm">
+                <select id="department" wire:model.live="departmentId" class="erp-field">
                     <option value="">All</option>
                     @foreach ($this->departments() as $id => $name)
                         <option value="{{ $id }}">{{ $name }}</option>

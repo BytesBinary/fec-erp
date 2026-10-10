@@ -3,25 +3,25 @@
         <div class="flex flex-wrap gap-4">
             <div>
                 <label class="block text-sm font-medium" for="desk-search">Student ID, name or request no.</label>
-                <input id="desk-search" type="search" wire:model.live.debounce.300ms="search" class="mt-1 rounded-lg border-gray-300 text-sm" />
+                <input id="desk-search" type="search" wire:model.live.debounce.300ms="search" class="erp-field" />
             </div>
             <div>
                 <label class="block text-sm font-medium" for="desk-department">Department</label>
-                <select id="desk-department" wire:model.live="departmentId" class="mt-1 rounded-lg border-gray-300 text-sm">
+                <select id="desk-department" wire:model.live="departmentId" class="erp-field">
                     <option value="">All</option>
                     @foreach ($this->departments() as $id => $name)<option value="{{ $id }}">{{ $name }}</option>@endforeach
                 </select>
             </div>
             <div>
                 <label class="block text-sm font-medium" for="desk-session">Session</label>
-                <select id="desk-session" wire:model.live="session" class="mt-1 rounded-lg border-gray-300 text-sm">
+                <select id="desk-session" wire:model.live="session" class="erp-field">
                     <option value="">All</option>
                     @foreach ($this->sessions() as $value => $label)<option value="{{ $value }}">{{ $label }}</option>@endforeach
                 </select>
             </div>
             <div>
                 <label class="block text-sm font-medium" for="desk-status">Status</label>
-                <select id="desk-status" wire:model.live="status" class="mt-1 rounded-lg border-gray-300 text-sm">
+                <select id="desk-status" wire:model.live="status" class="erp-field">
                     @foreach ($this->statuses() as $value => $label)<option value="{{ $value }}">{{ $label }}</option>@endforeach
                 </select>
             </div>

@@ -39,10 +39,10 @@
 
     <x-filament::section heading="All integrations">
         <div class="mb-4 flex flex-wrap gap-3">
-            <input type="search" wire:model.live.debounce.300ms="userFilter" placeholder="User name or email" aria-label="Filter by user" class="rounded-lg border-gray-300 text-sm" id="filter-user" />
-            <select wire:model.live="roleFilter" aria-label="Filter by role" class="rounded-lg border-gray-300 text-sm"><option value="">All roles</option>@foreach ($this->roles() as $role)<option value="{{ $role->name }}">{{ $role->name }}</option>@endforeach</select>
-            <select wire:model.live="clientFilter" aria-label="Filter by client" class="rounded-lg border-gray-300 text-sm"><option value="">All clients</option>@foreach ($this->clients() as $key => $client)<option value="{{ $key }}">{{ $client['label'] }}</option>@endforeach</select>
-            <select wire:model.live="statusFilter" aria-label="Filter by status" class="rounded-lg border-gray-300 text-sm"><option value="">Any status</option><option value="active">Active</option><option value="revoked">Revoked</option><option value="expired">Expired</option></select>
+            <input type="search" wire:model.live.debounce.300ms="userFilter" placeholder="User name or email" aria-label="Filter by user" class="erp-field" id="filter-user" />
+            <select wire:model.live="roleFilter" aria-label="Filter by role" class="erp-field"><option value="">All roles</option>@foreach ($this->roles() as $role)<option value="{{ $role->name }}">{{ $role->name }}</option>@endforeach</select>
+            <select wire:model.live="clientFilter" aria-label="Filter by client" class="erp-field"><option value="">All clients</option>@foreach ($this->clients() as $key => $client)<option value="{{ $key }}">{{ $client['label'] }}</option>@endforeach</select>
+            <select wire:model.live="statusFilter" aria-label="Filter by status" class="erp-field"><option value="">Any status</option><option value="active">Active</option><option value="revoked">Revoked</option><option value="expired">Expired</option></select>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full text-left text-sm" data-testid="all-integrations">
