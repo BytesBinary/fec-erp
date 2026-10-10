@@ -12,7 +12,10 @@ use App\Models\Department;
 use App\Models\Designation;
 use App\Models\Enrollment;
 use App\Models\Hall;
+use App\Models\HallDue;
+use App\Models\HallResidency;
 use App\Models\InstitutionSetting;
+use App\Models\LibraryLoan;
 use App\Models\Program;
 use App\Models\Result;
 use App\Models\RoleScope;
@@ -22,6 +25,7 @@ use App\Models\StudentProfile;
 use App\Models\Teacher;
 use App\Models\User;
 use App\Services\Audit\AuditLogger;
+use App\Services\Clearance\StaffSignatureService;
 use App\Services\Results\GradingScaleService;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
@@ -60,6 +64,7 @@ class TestSeeder extends Seeder
     {
         app(AuditLogger::class)->withoutAuditing(function (): void {
             $this->call([PermissionSeeder::class, RoleSeeder::class, \Database\Seeders\GradingScaleSeeder::class, \Database\Seeders\ProfileRequiredFieldSeeder::class]);
+            $this->call(\Database\Seeders\ClearanceStageSeeder::class);
 
             InstitutionSetting::query()->updateOrCreate([], [
                 'institution_name' => 'FEC Test Institute',
@@ -73,6 +78,8 @@ class TestSeeder extends Seeder
             $this->seedStudents();
             $this->seedProfiles();
             $this->seedAcademicRecords();
+            $this->seedCampusRecords();
+            $this->seedSignatures();
         });
     }
 
@@ -318,6 +325,58 @@ class TestSeeder extends Seeder
                     'published_at' => $status === 'published' ? now() : null,
                 ]);
             }
+        }
+    }
+
+    /**
+     * Hall residencies and dues, plus a library loan with a fine.
+     */
+    protected function seedCampusRecords(): void
+    {
+        $residents = [
+            TestDataset::STUDENT_ELIGIBLE => [TestDataset::HALL_A, '101'],
+            TestDataset::STUDENT_UNFINISHED => [TestDataset::HALL_A, '102'],
+            TestDataset::STUDENT_LIBRARY_LOAN => [TestDataset::HALL_B, '201'],
+        ];
+
+        foreach ($residents as $email => [$hallCode, $room]) {
+            $student = Student::query()->where('user_id', User::query()->where('email', $email)->value('id'))->firstOrFail();
+
+            HallResidency::query()->updateOrCreate(
+                ['student_id' => $student->id, 'ended_on' => null],
+                ['hall_id' => $this->halls[$hallCode]->id, 'room' => $room, 'assigned_on' => '2021-08-01'],
+            );
+        }
+
+        $eligible = Student::query()->where('user_id', User::query()->where('email', TestDataset::STUDENT_ELIGIBLE)->value('id'))->firstOrFail();
+
+        HallDue::query()->updateOrCreate(
+            ['student_id' => $eligible->id, 'description' => 'Common room fee (settled)'],
+            ['hall_id' => $this->halls[TestDataset::HALL_A]->id, 'amount' => 500, 'settled_at' => now()->subMonths(2)],
+        );
+
+        $borrower = Student::query()->where('user_id', User::query()->where('email', TestDataset::STUDENT_LIBRARY_LOAN)->value('id'))->firstOrFail();
+
+        LibraryLoan::query()->updateOrCreate(
+            ['student_id' => $borrower->id, 'accession_no' => 'ACC-0042'],
+            ['book_title' => 'Network Analysis and Synthesis', 'issued_on' => '2025-02-01', 'due_on' => '2025-03-01', 'returned_on' => null, 'fine_amount' => 120, 'fine_settled_at' => null],
+        );
+    }
+
+    /**
+     * A signature image for every clearance approver.
+     */
+    protected function seedSignatures(): void
+    {
+        $approvers = [
+            TestDataset::PROVOST_A, TestDataset::PROVOST_B, TestDataset::LIBRARIAN,
+            TestDataset::DEPT_HEAD_CSE, TestDataset::DEPT_HEAD_EEE, TestDataset::HEAD_OF_INSTITUTION,
+        ];
+
+        foreach ($approvers as $seed => $email) {
+            $user = User::query()->where('email', $email)->firstOrFail();
+
+            app(StaffSignatureService::class)->store($user, SignatureImage::png($seed + 1));
         }
     }
 

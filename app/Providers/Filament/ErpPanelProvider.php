@@ -65,6 +65,7 @@ class ErpPanelProvider extends PanelProvider
                 'Routine',
                 'Manage Exams',
                 'Academic',
+                'Clearance',
                 'Campus',
                 'Settings',
             ])

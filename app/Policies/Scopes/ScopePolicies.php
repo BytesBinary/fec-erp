@@ -2,12 +2,14 @@
 
 namespace App\Policies\Scopes;
 
+use App\Models\ClearanceRequest;
 use App\Models\Course;
 use App\Models\Department;
 use App\Models\Hall;
 use App\Models\Notice;
 use App\Models\Student;
 use App\Models\User;
+use App\Services\Clearance\ApproverResolver;
 use App\Support\Authorization\Authorizer;
 use App\Support\Authorization\ResourceScope;
 
@@ -80,6 +82,15 @@ class ScopePolicies
     public function canManageNotice(User $user, Notice $notice): bool
     {
         return $this->authorizer->allows($user, 'notice:update', $notice);
+    }
+
+    /**
+     * The approver must hold the role of the request's current stage and that
+     * role's scope (hall / department) must cover the student.
+     */
+    public function canApproveClearance(User $user, ClearanceRequest $request): bool
+    {
+        return app(ApproverResolver::class)->canAct($user, $request);
     }
 
     /**

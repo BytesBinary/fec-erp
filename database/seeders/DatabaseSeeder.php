@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             StaffSeeder::class,
             StudentSeeder::class,
             GradingScaleSeeder::class,
+            ClearanceStageSeeder::class,
             ProfileRequiredFieldSeeder::class,
         ]);
     }

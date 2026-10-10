@@ -118,3 +118,33 @@ function uiLogout(Pest\Browser\Api\AwaitableWebpage $page): Pest\Browser\Api\Awa
 {
     return $page->click('.fi-user-menu-trigger')->wait(1)->click('Sign out')->wait(2);
 }
+
+/**
+ * The student model behind a seeded account.
+ */
+function studentFor(string $email): App\Models\Student
+{
+    return App\Models\Student::query()->where('user_id', datasetUser($email)->id)->firstOrFail();
+}
+
+/**
+ * A seeded student applies for clearance; returns the request.
+ */
+function applyForClearance(string $email = Database\Seeders\Testing\TestDataset::STUDENT_ELIGIBLE): App\Models\ClearanceRequest
+{
+    return app(App\Services\Clearance\ClearanceService::class)->apply(datasetUser($email));
+}
+
+/**
+ * Walks a request through the given approver accounts, in order.
+ *
+ * @param  list<string>  $approverEmails
+ */
+function approveInOrder(App\Models\ClearanceRequest $request, array $approverEmails): App\Models\ClearanceRequest
+{
+    foreach ($approverEmails as $email) {
+        $request = app(App\Services\Clearance\ClearanceService::class)->approve(datasetUser($email), $request->id);
+    }
+
+    return $request;
+}

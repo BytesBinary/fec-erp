@@ -159,3 +159,11 @@ Autopilot run: decisions are made without waiting for the product owner (see
 ## D-017 — Photo upload in browser tests
 - **Decision:** The Pest browser plugin's in-process server drops multipart bodies, so E2E 1 cannot upload a photo through FilePond. The test shows the "Photo is required" message, then stores the file and sets `photo_path` directly and finishes the form through the UI. Photo handling is unit-tested at the service level.
 - **Change:** If the plugin gains file support, replace the direct DB update with `attach()`.
+
+## D-018 — Clearance eligibility: "final results published"
+- **Decision:** A student is eligible when the profile is complete, the account is active, no other request is active, published results earn at least the program's `required_credits`, and no result is still awaiting publication for a course that has no published pass. An unpublished improvement/retake attempt of an already-passed course does not block.
+- **Why:** The seed data (and real life) keep unpublished improvement attempts; blocking on them would make everyone ineligible.
+- **Change:** `App\Services\Clearance\EligibilityChecker`.
+
+## D-019 — Clearance approver matching and signatures
+- **Decision:** An approver may act only if they hold the stage's approver role *and* that role's own scope covers the student (hall → current residency hall, department → student's department, global → any). Signatures are private PNGs (`local` disk); each approval copies the file into `clearance-signatures/{request}/` and stores its SHA-256, which is part of the hash chain. Skipped stages are recorded as `skipped` rows in the chain.

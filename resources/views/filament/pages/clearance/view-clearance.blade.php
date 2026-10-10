@@ -1,0 +1,60 @@
+<x-filament-panels::page>
+    @php($clearance = $this->clearance())
+    @php($dues = $this->dues())
+
+    <x-filament::section>
+        <div class="flex flex-wrap items-start justify-between gap-4">
+            <dl class="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
+                <div><dt class="text-gray-500">Student</dt><dd data-testid="student-name">{{ $clearance->student->user->name }}</dd></div>
+                <div><dt class="text-gray-500">Roll</dt><dd>{{ $clearance->student->roll_number }}</dd></div>
+                <div><dt class="text-gray-500">Department</dt><dd>{{ $clearance->student->department?->name }}</dd></div>
+                <div><dt class="text-gray-500">Program</dt><dd>{{ $clearance->student->program?->name }}</dd></div>
+            </dl>
+            <x-filament::badge :color="$clearance->status->color()" data-testid="clearance-status">{{ $clearance->status->label() }}</x-filament::badge>
+        </div>
+        <div class="mt-4 flex flex-wrap gap-3">
+            {{ $this->approveAction }}
+            {{ $this->rejectAction }}
+        </div>
+    </x-filament::section>
+
+    <x-filament::section heading="Approval timeline">
+        <x-clearance.timeline :timeline="$this->timeline()" />
+    </x-filament::section>
+
+    @if ($dues['hall'] !== null)
+        <x-filament::section heading="Hall dues">
+            @forelse ($dues['hall'] as $due)
+                <div class="flex justify-between text-sm" data-testid="hall-due">
+                    <span>{{ $due->description }}</span>
+                    <span>{{ number_format($due->amount, 2) }} — {{ $due->settled_at ? 'settled' : 'OPEN' }}</span>
+                </div>
+            @empty
+                <p class="text-sm text-gray-500">No dues recorded.</p>
+            @endforelse
+        </x-filament::section>
+    @endif
+
+    @if ($dues['library'] !== null)
+        <x-filament::section heading="Library">
+            <p class="text-sm" data-testid="library-summary">
+                Outstanding books: <strong>{{ $dues['library']['outstanding_loans'] }}</strong> ·
+                Unpaid fines: <strong>{{ number_format($dues['library']['unpaid_fines'], 2) }}</strong>
+            </p>
+            <ul class="mt-2 list-disc pl-5 text-sm">
+                @foreach ($dues['library']['items'] as $loan)
+                    <li>{{ $loan->book_title }} — due {{ $loan->due_on->format('d M Y') }}@if (! $loan->returned_on) <span class="text-danger-600">(not returned)</span>@endif</li>
+                @endforeach
+            </ul>
+        </x-filament::section>
+    @endif
+
+    @php($integrity = $this->integrity())
+    <x-filament::section heading="Integrity">
+        <p class="text-sm {{ $integrity['intact'] ? 'text-success-700' : 'text-danger-700' }}" data-testid="integrity">
+            {{ $integrity['intact'] ? 'Approval chain intact ('.$integrity['checked'].' entries).' : 'WARNING: the approval chain was altered.' }}
+        </p>
+    </x-filament::section>
+
+    <x-filament-actions::modals />
+</x-filament-panels::page>
