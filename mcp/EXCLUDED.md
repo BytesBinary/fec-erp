@@ -85,3 +85,17 @@ Format: one entry per line, `` `Class::method` `` or `` `Class::*` `` or `` `*::
 - `App\Services\ResultPortal\EligibleStudents::*` — internal: which students an exam applies to.
 - `App\Services\ResultPortal\ExamWindow::*` — internal: admission-year window rule.
 - `App\Services\ResultPortal\PortalPage::*` — internal value object of the result parser.
+
+## Email notifications
+
+- `App\Services\Notifications\NotificationEvents::*` — the internal door every module uses to emit an email event.
+- `App\Services\Notifications\NotificationRules::*` — creates the per-event rule rows from the registry.
+- `App\Services\Notifications\NotificationEventRegistry::*` — read access to the event registry.
+- `App\Services\Notifications\OutboxProcessor::*` — internal: turns outbox events into deliveries (scheduled every minute).
+- `App\Services\Notifications\RecipientResolver::*` — internal: resolves rule recipients.
+- `App\Services\Notifications\TemplateRenderer::*` — internal: fills placeholders.
+- `App\Services\Notifications\SecretGuard::*` — internal: blocks credential-like text.
+- `App\Services\Notifications\Recipient::*` — internal value object.
+- `App\Services\Notifications\MailMessenger::*` — internal mail sender.
+- `App\Services\Notifications\LogMessenger::*` — internal log sender.
+- `App\Services\Notifications\EmailDeliveryService::sendDigests` — scheduled daily by `notifications:send-digests`.

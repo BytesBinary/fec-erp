@@ -1,6 +1,6 @@
 # Email notification events — audit and matrix
 
-Status: **proposal, not implemented.** Found by reading the code (services, notifications, observers, scheduler,
+Status: **implemented** (see "Operations" at the end). Found by reading the code (services, notifications, observers, scheduler,
 audit actions), not by guessing. "Exists" = something already fires today (in-app bell + a log line, because
 `ExternalMessenger` is bound to `LogMessenger`); "New" = the operation exists but nothing notifies; "Planned" = belongs to
 the result-portal work.
@@ -104,6 +104,7 @@ Columns: **Event key** · when / status · recipient · default · mode · email
 | `clearance.collected` | Marked collected · **Exists** | The student | ON | Immediate | Request no., date | — |
 | `clearance.cancelled` | Cancelled · audit only → **New** | Student; current approver | ON | Immediate | Request no. | — |
 | `clearance.printed` / `reprinted` | Print recorded · audit only → **New** | Admin office | OFF | Digest | Request no., duplicate flag | — |
+| `clearance.ready_digest` | Daily summary of clearances ready for the office · **Exists** | Admin office | ON | Digest | Count | — |
 | `clearance.reminder` | Pending > N days · **Exists** | Current approvers | ON | Digest | Student, days waiting | — |
 | `clearance.escalation` | Pending > escalation days · **Exists** | Super admins | ON | Immediate | Request, stage, days | — |
 | `clearance.integrity_failed` | Hash-chain verification fails · **New** | Super admins | ON | Immediate | Request no., break position | — |
@@ -124,7 +125,6 @@ Columns: **Event key** · when / status · recipient · default · mode · email
 |---|---|---|---|---|---|---|
 | `notice.published` | `NoticeService::create` (audience: all / department / hall) · **New** | Matching students/staff | OFF | Digest | Title, link | Full body of restricted audiences |
 | `course.teachers_assigned` | Audit exists · **New mail** | The teacher | ON | Immediate | Course, semester | — |
-| `exam_duty.assigned` | Exam duty created (Filament-only → observer) · **New** | The teacher(s) named | OFF | Digest | Exam, date, time | — |
 | `routine.generated` | Routine generated · audit only → **New** | Department staff | OFF | Digest | Semester, department | — |
 | `semester.activated` | `SemesterService::setActive` · **New** | Admin office | OFF | Immediate | Semester | — |
 
@@ -169,3 +169,33 @@ stay in the audit log.
 9. **Tests**: emission per event, recipient resolution incl. department scoping, rules on/off, template rendering and
    redaction, dedupe on retried jobs and repeated scheduled runs, failure → retry → success, outbox recovery after a
    simulated crash, digest assembly, MCP/permission checks for the admin screens.
+
+## Operations (as built)
+
+**Where things are**
+
+| What | Where |
+|---|---|
+| Event registry (defaults) | `config/notification_events.php` |
+| Pipeline settings | `config/notifications.php`, `.env`: `NOTIFICATION_DRIVER` (`log` = write to the log, `mail` = send through `MAIL_*`), `NOTIFICATIONS_ENABLED`, `NOTIFICATION_DIGEST_TIME` |
+| Emit an event | `app(NotificationEvents::class)->emit($key, $context, $dedupeKey, $user, $departmentId, $hallId, $extraEmails)` |
+| Admin screens | Security & Access → **Email notifications**, **Email templates**, **Email deliveries** |
+| MCP tools | `notification_rule_list/update/reset`, `notification_preview`, `notification_test_send`, `email_template_*`, `email_delivery_list/retry/retry_failed` |
+| Permissions | `notification_rule:view/manage`, `email_template:manage`, `email_delivery:view/retry` (super admin all; admin office view + retry) |
+
+**Turning real email on:** set `MAIL_MAILER`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_FROM_ADDRESS`, then `NOTIFICATION_DRIVER=mail`. Run a queue worker (`php artisan queue:work`, included in `composer run dev`) and the scheduler (`php artisan schedule:work` or the cron entry). Use **Send test to me** on any event first.
+
+**How it flows:** module → `emit()` → `outbox_events` row (same DB transaction as the change) → `ProcessOutbox` job (also every minute) → rule check → recipients → rendered text → `email_deliveries` (unique dedupe key) → `SendEmailDelivery` (5 tries, backoff 1/5/15/60 min) → mail. Digest events wait in `held` and go out as one email per recipient at `NOTIFICATION_DIGEST_TIME`.
+
+**Behaviour worth knowing**
+- A switched-off event writes nothing at all (so turning it on later is not retroactive).
+- Seeders and `phpunit.xml` switch the whole system off (`NOTIFICATIONS_ENABLED=false`); demo users are never emailed.
+- No email is sent to someone without a valid address: it is recorded as **skipped** with the reason.
+- An email whose text looks like a token or password is **blocked**, not sent.
+- Delivery is at-least-once: a crash between sending and saving "sent" could repeat one email.
+
+**Recovery**
+- App crashed after saving a change: the event is in the outbox; `php artisan notifications:process-outbox` (scheduled every minute) turns it into emails. Nothing to do.
+- Mail provider down: deliveries retry on their own, then show as **failed**; fix the provider, then **Retry all failed** (or the MCP tool). Three failures within an hour raise one "Emails are failing" event.
+- Stuck outbox rows (after 5 attempts they stop): see `outbox_events.last_error`; fix the cause and set `attempts` to 0.
+- Missing rule rows after adding events: `php artisan notifications:sync-rules` (never overwrites edits).

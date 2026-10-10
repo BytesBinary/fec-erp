@@ -313,3 +313,11 @@ Config in `config/erp.php` (+ focused files below). UI strings in `lang/en/erp.p
 - **Scheduled commands:** `mcp:notify-expiring`, `clearance:remind-pending`, `sessions:prune` (`routes/console.php`; needs `php artisan schedule:work` or the cron entry).
 - **Seeds:** `seed:test` (deterministic, includes the test-only 2FA user and MCP token), `seed:demo` (alive-looking data, no test-only secrets).
 - **CI:** `.github/workflows/tests.yml` runs `.autopilot/verify.sh`.
+
+## 12. Result portal and email notifications (as built)
+
+- **Result portal** (`app/Services/ResultPortal`, `config/result_portal.php`): `PortalClient` (only HTTP), `DuResultParser`, `ExamCatalog` / `ExamWindow` / `EligibleStudents`, `DuPortalResultSource` (implements `ResultSource`, swappable for an official feed), `PortalResultImporter` (grades, retake / improvement marks, per-exam outcome), `ResultPullRunner` + `PullStudentResults` job, `ExamCatalogSync`, `ProbeSelector`, `PublicationDetector`, `PortalMonitor` (screen + MCP). Commands: `portal:sync-catalog`, `portal:check` (daily), `portal:recheck-pending` (daily). Tables: `result_pulls`, `portal_results`, `portal_exam_results`, `portal_exams`, `portal_publications`, `portal_probes`, `portal_check_runs`.
+- **Operating it:** run `php artisan migrate`, a queue worker and the scheduler. On the Portal monitor press **First-time sync** once, leave shadow mode on for the first publications, then press **Run now**. To use an official data feed instead of scraping, implement `ResultSource` and rebind it in `AppServiceProvider`.
+- **Email notifications** (`app/Services/Notifications`, `config/notification_events.php`, `config/notifications.php`): see the Operations section of `docs/EMAIL_EVENTS.md`.
+- **Recovery:** every long-running step keeps its state in the database (pulls, publications, outbox, deliveries), so after a restart the queue worker and scheduler simply continue; stuck `running` pulls are re-queued by retrying them on the Student results screen.
+

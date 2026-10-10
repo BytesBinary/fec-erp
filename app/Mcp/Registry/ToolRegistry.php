@@ -27,6 +27,7 @@ class ToolRegistry
         \App\Mcp\Domains\CampusTools::class,
         \App\Mcp\Domains\ClearanceTools::class,
         \App\Mcp\Domains\NoticeTools::class,
+        \App\Mcp\Domains\NotificationTools::class,
         \App\Mcp\Domains\AdminTools::class,
         \App\Mcp\Domains\HelpTools::class,
     ];

@@ -198,3 +198,23 @@ Autopilot run: decisions are made without waiting for the product owner (see
 - **Parser not written:** `DuResultParser` throws until a saved real result page (regular and improvement exam) is available; the auto-mode classifier blocked a live lookup of a real registration number, so no sample was fetched. Every pull therefore fails visibly with "layout not recognised" — nothing wrong is stored. Pulls only ever look up students that exist in the ERP; registration numbers are never enumerated.
 - **Seeding:** seeders switch the sync off (`result_portal.enabled`), and `phpunit.xml` sets `RESULT_PORTAL_ENABLED=false`.
 - **Test allow-list:** `result_portal_get` was added to the student tool allow-list in `RoleToolMatrixTest` because students may read their own pulled grades (same rule as `result_get_*`).
+
+## D-026 — Result portal: parser, exam catalog, daily detection (2026-10-10)
+
+- **Parser** (`DuResultParser`) was written from four real saved pages (anonymised copies are in `tests/Fixtures/portal`): header table by label, subject rows by position, outcome cell (Promoted / Imp., GPA, CGPA, backlog). Codes are normalised (`CSE 1201` = `CSE-1201`); an F with a blank point is 0.00; anything unknown fails loudly.
+- **Admission-year window:** a student is only checked against exams from `admission_year` (entered on the student; falls back to the batch session start) to `admission_year + 6`, never past the current year (2022 → 2022..2026). Exams tagged with another batch's session are skipped.
+- **Exam catalog** is saved in `portal_exams` (first sync = "known", later new ids = candidates). Detection layers: daily list check (3 requests) → probe students confirm → bulk pull of eligible students → students without a result are "waiting" and re-checked after 3 and 7 days, then closed as "not in this exam". A portal error or unknown page is never treated as "not published".
+- **Probe students:** regular exam → best CGPA so far; improvement exam → students with a failing/low grade (top students never sit those).
+- **Shadow mode** (`RESULT_PORTAL_SHADOW=true`, default): publications are detected and confirmed but no pulls or emails start until an admin presses **Run now**.
+- **Retake / improvement:** old grades are kept; the newest attempt is current (`replace_policy=always`) or the better one (`better`), marked improved / retake (previous grade F) / declined.
+- **Credits** are not on the portal and stay empty. Exam rolls, outcome, GPA, CGPA and the raw page are stored per student and exam.
+
+## D-027 — Email notifications platform (2026-10-10)
+
+- One registry (`config/notification_events.php`, ~70 events found by auditing the code, see `docs/EMAIL_EVENTS.md`), one dispatcher (`NotificationEvents::emit`), a transactional outbox, admin-editable rules / templates, delivery history with retry, daily digests. Existing bell notifications flow through the same pipeline via `ExternalChannel` (they name their event).
+- Defaults: security and student-affecting changes ON and immediate; noisy / administrative events OFF; high-volume events in the daily digest. Grades and passwords are never placed in an email; students sign in to see results.
+- Only the super admin changes rules and templates; the admin office can view rules and deliveries and retry failures. Department heads receive only events of their own department. (Department heads do not get the delivery history screen.)
+- `exam_duty.assigned` was dropped from the plan: exam duties have no link to teachers, so there is nobody to resolve.
+- `SecretGuard` blocks credential-shaped text (a value that contains a digit after `password:` / `token:` etc., bearer tokens, `erpmcp_` tokens, `otpauth://`).
+- A new account's first password is never emailed (there is still no password-reset flow; see docs/EMAIL_EVENTS.md).
+

@@ -191,6 +191,24 @@ return [
             'permission' => 'portal_monitor:view',
             'steps' => ['Open Portal monitor in the Academic menu.', 'First time: press First-time sync to save the exam list.', 'Press Check for new results to look for newly published exams.', 'Press Run now on a confirmed publication to pull the students.'],
         ],
+        'App\\Filament\\Resources\\NotificationRules\\NotificationRuleResource' => [
+            'description' => 'Choose which events send an email, to whom (the person, department head, roles), immediately or in the daily digest, and with which template. Preview a message and send yourself a test.',
+            'keywords' => ['email', 'emails', 'notification', 'notifications', 'event rules', 'mail', 'digest', 'recipients', 'template', 'smtp'],
+            'permission' => 'notification_rule:view',
+            'steps' => ['Open Email notifications under Security & Access.', 'Find the event, press Configure, and set on/off, when, recipients and template.', 'Use Preview, then Send test to me before turning an event on.'],
+        ],
+        'App\\Filament\\Resources\\EmailTemplates\\EmailTemplateResource' => [
+            'description' => 'Write extra email subjects and bodies for an event, using only that event\'s placeholders.',
+            'keywords' => ['email template', 'templates', 'subject', 'body', 'placeholder', 'wording'],
+            'permission' => 'notification_rule:view',
+            'steps' => [],
+        ],
+        'App\\Filament\\Resources\\EmailDeliveries\\EmailDeliveryResource' => [
+            'description' => 'Every email the system queued: sent, failed (with the error), held for the digest, skipped or blocked, with a retry.',
+            'keywords' => ['email deliveries', 'sent emails', 'failed emails', 'retry email', 'delivery history', 'bounced'],
+            'permission' => 'email_delivery:view',
+            'steps' => ['Open Email deliveries under Security & Access.', 'Use the Failed tab to see what did not go out, then Retry or Retry all failed.'],
+        ],
         'App\\Filament\\Resources\\AuditLogs\\AuditLogResource' => [
             'description' => 'Who changed what, from web, MCP or the assistant.',
             'keywords' => ['audit', 'log', 'history', 'changes', 'who', 'activity'],
