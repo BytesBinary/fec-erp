@@ -135,3 +135,23 @@ Autopilot run: decisions are made without waiting for the product owner (see
   dependency); model from `ASSISTANT_MODEL`, key from `ANTHROPIC_API_KEY` (only in `.env`, placeholders in
   `.env.example`).
 - **Change:** Swap the provider binding in `config/assistant.php`.
+
+## D-015 — Phase 1S: sessions, 2FA and notification delivery
+- **Decision:** Custom TOTP implementation on `pragmarx/google2fa` (not Filament's built-in MFA) because the
+  spec fixes the data model (`user_mfa`, `mfa_recovery_codes`, `mfa_role_policies`), replay protection,
+  lockout and trusted devices. Session records (`user_sessions`) are created lazily on the first authenticated
+  request and validated by `TrackUserSession` on every request (web, Livewire, JSON). Web pages get a redirect
+  to /login, Livewire updates a 419 (page reloads to login), JSON 401 `SESSION_REVOKED`/`SESSION_EXPIRED`.
+  Notification delivery: one `ExternalMessenger` interface with a log-only default (replaces the separate
+  mail/SMS contracts of D-013 for the security notifications); in-app database notifications always.
+- **Also:** Menu path is Settings → Devices / Two-factor authentication / Two-factor policy (flat items in the
+  Settings group). Recovery codes: 10 × `xxxxx-xxxxx`, HMAC-SHA256 with the app key. Trusted devices: random
+  token in an encrypted cookie, hash stored in `known_devices`; revoking the granting session removes it.
+  `SESSION_LIFETIME` must be ≥ 43200 (30 days) for "remember me" to work; the 12 h inactivity limit is
+  enforced by `user_sessions.expires_at`.
+- **Change:** `config/security.php`.
+
+## D-016 — Browser (E2E) test isolation
+- **Decision:** `BrowserTestCase` prepends `Tests\Support\ResetRequestState` and uses file sessions, because
+  the Pest browser plugin serves all requests from one process and would otherwise leak the authenticated
+  user, session attributes and scoped services between browser contexts (needed for the multi-device E2E tests).

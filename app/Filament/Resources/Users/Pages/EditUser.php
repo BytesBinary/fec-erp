@@ -11,12 +11,15 @@ use App\Models\Course;
 use App\Models\Department;
 use App\Models\Hall;
 use App\Models\User;
+use App\Services\Security\TwoFactorService;
+use App\Services\Security\UserSecurityService;
 use App\Services\Users\RoleService;
 use App\Services\Users\UserService;
 use App\Support\Authorization\Authorizer;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 use Filament\Schemas\Components\Utilities\Get;
@@ -55,6 +58,8 @@ class EditUser extends EditRecord
         return [
             $this->assignRoleAction(),
             $this->revokeRoleAction(),
+            $this->logoutEverywhereAction(),
+            $this->resetTwoFactorAction(),
             ActionGroup::make([
                 Action::make('deactivate')
                     ->label('Deactivate account')
@@ -111,6 +116,35 @@ class EditUser extends EditRecord
             ->action(fn (array $data) => $this->runDomainAction(
                 fn () => app(RoleService::class)->assign($this->actingUser(), $this->record, $data['role'], array_map('intval', $data['scope_ids'] ?? [])),
                 'Role assigned.',
+            ));
+    }
+
+    protected function logoutEverywhereAction(): Action
+    {
+        return Action::make('logoutEverywhere')
+            ->label(__('erp.security.admin_revoke_all'))
+            ->icon(Heroicon::OutlinedArrowRightStartOnRectangle)
+            ->color('gray')
+            ->visible(fn (): bool => $this->can('session:revoke'))
+            ->schema([Textarea::make('reason')->label(__('erp.security.admin_reason'))->required()->maxLength(255)])
+            ->action(fn (array $data) => $this->runDomainAction(
+                fn () => app(UserSecurityService::class)->revokeAllSessions($this->actingUser(), $this->record, $data['reason']),
+                'All sessions logged out.',
+            ));
+    }
+
+    protected function resetTwoFactorAction(): Action
+    {
+        return Action::make('resetTwoFactor')
+            ->label(__('erp.security.admin_reset_2fa'))
+            ->icon(Heroicon::OutlinedLockOpen)
+            ->color('danger')
+            ->visible(fn (): bool => $this->can('two_factor:reset') && app(TwoFactorService::class)->isEnabled($this->record))
+            ->modalDescription('Removes two-factor authentication, signs the user out everywhere and stops their AI integrations.')
+            ->schema([Textarea::make('reason')->label(__('erp.security.admin_reason'))->required()->maxLength(255)])
+            ->action(fn (array $data) => $this->runDomainAction(
+                fn () => app(UserSecurityService::class)->resetTwoFactor($this->actingUser(), $this->record, $data['reason']),
+                'Two-factor authentication reset.',
             ));
     }
 

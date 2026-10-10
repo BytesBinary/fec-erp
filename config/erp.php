@@ -130,6 +130,11 @@ return [
             'notice:delete' => 'Delete notices',
 
             'audit_log:view' => 'View the audit log',
+
+            'session:view_any' => 'View any user\'s login sessions',
+            'session:revoke' => 'Revoke any user\'s login sessions',
+            'two_factor:reset' => 'Reset a user\'s two-factor authentication',
+            'security:manage' => 'Manage the security policy (2FA per role)',
         ],
 
         /*

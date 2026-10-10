@@ -7,7 +7,7 @@ Decisions: `docs/DECISIONS.md` · Verify: `.autopilot/verify.sh`
 
 - [x] **0** — Discovery, architecture notes, decisions, verify.sh, E2E tooling (2026-10-10)
 - [x] **1** — RBAC foundation, central authorize(), audit log, service layers, seed:test skeleton (2026-10-10; verify: Unit 35, Feature 72, Browser 2 — all pass)
-- [ ] **1S** — Account security: sessions/devices, new-device alerts, TOTP 2FA, recovery codes, admin tools (E2E 11, 12, 15)
+- [x] **1S** — Account security: sessions/devices, new-device alerts, TOTP 2FA, recovery codes, admin tools (E2E 11, 12, 15) (2026-10-10; verify: Unit 47, Feature 146, Browser 7 — all pass)
 - [ ] **2** — Profile gate + Results/CGPA (E2E 1, 2)
 - [ ] **3** — Clearance core (E2E 3 to READY, 4, 5, 6)
 - [ ] **4** — Clearance desk, print/PDF, verification (E2E 3 full, 7, 8)
@@ -33,7 +33,7 @@ Decisions: `docs/DECISIONS.md` · Verify: `.autopilot/verify.sh`
 
 - (none)
 
-## Next up (Phase 1)
+## Next up (Phase 2)
 
 See ARCHITECTURE_NOTES §10 "Phase 1". Start with migrations (is_active, role rename, role_scopes,
 audit_logs, programs, semesters, notices), `RoleKey` enum, `config/erp.php`, `Authorizer`, `AuditLogger`,
@@ -50,3 +50,6 @@ services, `seed:test`.
 - Browser-test tips: Filament input ids like `form.email` → selector `[id="form.email"]`; click
   `button[type=submit]` rather than `press('Sign in')`; wait after Livewire submits.
 - `AdminUserSeeder` creates `admin@fec.edu.bd` but assigns no role (pre-existing; Phase 1 seeds roles).
+
+- Browser tests: each `visit()` is a separate context; tests/Support/ResetRequestState (prepended in BrowserTestCase) resets auth/session/scoped state per request. Filament modal inputs have ids like `mountedActionSchema0.password`. Click by button text ('Verify'), because topbar 'Sign out' is also a submit button. Run browser tests with output redirected to a file (chrome keeps pipes open).
+- Phase 1S exposes events `TwoFactorDeactivated` and `McpIntegrationsStopRequested`; Phase 5M must add listeners that revoke integrations.

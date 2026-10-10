@@ -71,3 +71,50 @@ function authorizer(): App\Support\Authorization\Authorizer
 {
     return app(App\Support\Authorization\Authorizer::class);
 }
+
+/**
+ * The authenticator code for `$secret`, `$stepOffset` 30-second steps away from now.
+ */
+function totpCode(string $secret, int $stepOffset = 0): string
+{
+    $step = intdiv(now()->getTimestamp(), 30) + $stepOffset;
+
+    return app(PragmaRX\Google2FA\Google2FA::class)->oathTotp($secret, $step);
+}
+
+/**
+ * Turns 2FA on for `$user` with `$secret`, bypassing the setup UI.
+ *
+ * @return list<string> plain recovery codes
+ */
+function enableTwoFactorFor(App\Models\User $user, string $secret = 'JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP'): array
+{
+    $service = app(App\Services\Security\TwoFactorService::class);
+
+    App\Models\UserMfa::query()->updateOrCreate(
+        ['user_id' => $user->id],
+        ['totp_secret_encrypted' => $secret, 'enabled_at' => now(), 'last_used_step' => null, 'failed_attempts' => 0, 'locked_until' => null],
+    );
+
+    return app(App\Services\Security\RecoveryCodeService::class)->generate($user);
+}
+
+/**
+ * Logs in through the real login form in a fresh browser context and returns the page.
+ */
+function uiLogin(string $email, string $password = 'password'): Pest\Browser\Api\AwaitableWebpage
+{
+    return visit('/login')
+        ->type('[id="form.email"]', $email)
+        ->type('[id="form.password"]', $password)
+        ->click('button[type=submit]')
+        ->wait(2);
+}
+
+/**
+ * Signs out through the user menu of the current page.
+ */
+function uiLogout(Pest\Browser\Api\AwaitableWebpage $page): Pest\Browser\Api\AwaitableWebpage
+{
+    return $page->click('.fi-user-menu-trigger')->wait(1)->click('Sign out')->wait(2);
+}

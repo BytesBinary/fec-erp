@@ -61,6 +61,21 @@ class User extends Authenticatable implements FilamentUser, HasAuthorizationScop
         return ResourceScope::forOwner($this->id)->merge(ResourceScope::forDepartment($departmentId));
     }
 
+    public function mfa(): HasOne
+    {
+        return $this->hasOne(UserMfa::class);
+    }
+
+    public function loginSessions(): HasMany
+    {
+        return $this->hasMany(UserSession::class);
+    }
+
+    public function hasTwoFactorEnabled(): bool
+    {
+        return $this->mfa?->isEnabled() === true;
+    }
+
     public function teacher(): HasOne
     {
         return $this->hasOne(Teacher::class);
