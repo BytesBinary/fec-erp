@@ -43,7 +43,7 @@
                         <td>{{ $request->student->roll_number }}</td>
                         <td>{{ $request->student->department?->code }}</td>
                         <td>{{ $request->status->label() }}</td>
-                        <td><a class="text-primary-600 underline" href="{{ \App\Filament\Pages\Clearance\ViewClearance::getUrl(['record' => $request->id]) }}">Open</a></td>
+                        <td><a class="text-primary-700 underline" href="{{ \App\Filament\Pages\Clearance\ViewClearance::getUrl(['record' => $request->id]) }}">Open</a></td>
                     </tr>
                 @endforeach
                 </tbody>

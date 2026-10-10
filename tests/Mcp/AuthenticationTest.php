@@ -38,7 +38,7 @@ it('rejects a missing or unknown token', function () {
 });
 
 it('never stores the plain token', function () {
-    $row = DB::table('mcp_integrations')->first();
+    $row = DB::table('mcp_integrations')->where('user_id', $this->user->id)->first();
 
     expect($row->token_hash)->toBe(hash('sha256', $this->token))
         ->and(json_encode($row))->not->toContain($this->token)

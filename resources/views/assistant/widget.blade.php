@@ -9,7 +9,7 @@
     style="position: fixed; right: 1rem; bottom: 1rem; z-index: 60; font-family: inherit;"
 >
     <button type="button" id="assistant-toggle" x-on:click="toggle()" :aria-expanded="open.toString()" aria-controls="assistant-panel"
-            class="fi-btn fi-color-primary fi-bg-color-600 text-white" style="border-radius: 9999px; padding: .6rem 1rem; box-shadow: 0 4px 14px rgba(0,0,0,.25); background: var(--primary-600, #166534); color: #fff;">
+            class="fi-btn fi-color-primary fi-bg-color-600 text-white" style="border-radius: 9999px; padding: .6rem 1rem; box-shadow: 0 4px 14px rgba(0,0,0,.25); background: #14532d; color: #fff;">
         <span aria-hidden="true">✦</span> <span>Assistant</span>
     </button>
 
@@ -35,7 +35,7 @@
                             <div style="font-weight: 600" x-text="m.title"></div>
                             <div style="color: #6b7280; font-size: .75rem" x-text="m.menuPath"></div>
                             <ol x-show="m.steps && m.steps.length" style="margin: .3rem 0 .3rem 1rem; list-style: decimal; font-size: .75rem;"><template x-for="step in m.steps" :key="step"><li x-text="step"></li></template></ol>
-                            <a :href="m.url" data-testid="assistant-link" style="display: inline-block; margin-top: .3rem; padding: .25rem .7rem; border-radius: .4rem; background: var(--primary-600, #166534); color: #fff; text-decoration: none;">Open</a>
+                            <a :href="m.url" data-testid="assistant-link" style="display: inline-block; margin-top: .3rem; padding: .25rem .7rem; border-radius: .4rem; background: #14532d; color: #fff; text-decoration: none;">Open</a>
                         </div>
                     </template>
                     <template x-if="m.kind === 'confirm'">
@@ -44,7 +44,7 @@
                             <div x-text="m.summary" style="font-size: .8rem"></div>
                             <pre style="font-size: .7rem; background: #f9fafb; padding: .3rem; overflow-x: auto;" x-text="JSON.stringify(m.preview, null, 1)"></pre>
                             <div x-show="m.status === 'pending'" style="display: flex; gap: .5rem; margin-top: .3rem;">
-                                <button type="button" data-testid="assistant-confirm-yes" x-on:click="decide(m, 'confirm')" style="padding: .25rem .8rem; border-radius: .4rem; background: #166534; color: #fff;">Confirm</button>
+                                <button type="button" data-testid="assistant-confirm-yes" x-on:click="decide(m, 'confirm')" style="padding: .25rem .8rem; border-radius: .4rem; background: #14532d; color: #fff;">Confirm</button>
                                 <button type="button" data-testid="assistant-confirm-no" x-on:click="decide(m, 'cancel')" style="padding: .25rem .8rem; border-radius: .4rem; background: #e5e7eb;">Cancel</button>
                             </div>
                             <div x-show="m.status !== 'pending'" data-testid="assistant-confirm-result" style="font-size: .8rem; color: #374151;" x-text="m.resultText"></div>
@@ -59,7 +59,7 @@
         <form x-on:submit.prevent="send()" style="display: flex; gap: .4rem; padding: .6rem; border-top: 1px solid #e5e7eb;">
             <label class="sr-only" for="assistant-input" style="position:absolute;left:-9999px">Message</label>
             <input id="assistant-input" type="text" x-model="draft" maxlength="2000" autocomplete="off" placeholder="Ask the assistant…" style="flex: 1; border: 1px solid #d1d5db; border-radius: .4rem; padding: .35rem .5rem; color: #111;" />
-            <button type="submit" id="assistant-send" :disabled="busy || draft.trim() === ''" style="padding: .35rem .8rem; border-radius: .4rem; background: var(--primary-600, #166534); color: #fff;">Send</button>
+            <button type="submit" id="assistant-send" :disabled="busy || draft.trim() === ''" style="padding: .35rem .8rem; border-radius: .4rem; background: #14532d; color: #fff;">Send</button>
         </form>
     </section>
 </div>

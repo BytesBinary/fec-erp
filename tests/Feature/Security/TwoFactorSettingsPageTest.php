@@ -23,7 +23,7 @@ it('requires the password before the setup starts', function () {
         ->callAction('startSetup', ['password' => 'not-the-password'])
         ->assertHasActionErrors();
 
-    expect(UserMfa::query()->count())->toBe(0);
+    expect(UserMfa::query()->where('user_id', $this->user->id)->count())->toBe(0);
 
     Livewire::test(TwoFactorSettings::class)
         ->callAction('startSetup', ['password' => T::PASSWORD])
@@ -133,5 +133,5 @@ it('lets the user cancel a pending setup', function () {
 
     Livewire::test(TwoFactorSettings::class)->call('cancelSetup')->assertSet('settingUp', false);
 
-    expect(UserMfa::query()->count())->toBe(0);
+    expect(UserMfa::query()->where('user_id', $this->user->id)->count())->toBe(0);
 });

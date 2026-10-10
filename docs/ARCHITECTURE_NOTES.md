@@ -302,3 +302,14 @@ Config in `config/erp.php` (+ focused files below). UI strings in `lang/en/erp.p
 - Scheduled commands `clearance:remind-pending`, `mcp:notify-expiring`, `sessions:prune`; rate limits
   reviewed; accessibility assertions (`assertNoAccessibilityIssues`) on new pages; `DemoSeeder` +
   `seed:demo`; `.github/workflows/tests.yml` running verify.sh; docs (`README_MCP.md`, `MORNING_REPORT.md`).
+
+## 11. As built (end of the autopilot run)
+
+- **Security:** `app/Services/Security` (sessions, devices, TOTP, recovery codes, trusted devices), middleware `TrackUserSession` → `Authenticate` → `EnsureTwoFactorChallengePassed` → `EnforceRoleTwoFactorSetup` → `EnsureProfileComplete` (panel and the `erp.secure` route group).
+- **Domain:** `app/Services/{Profile,Results,Academic,Halls,Library,Clearance,Mcp,Assistant,Audit,Users,People}`; every write goes through a service that authorizes via `App\Support\Authorization\Authorizer` and is audited.
+- **Clearance:** `ClearanceService::transition()` is the only status writer (optimistic `version`), hash chain in `HashChain`, print/verify in `ClearancePrintService` and two controllers.
+- **MCP:** `routes/ai.php` → `ErpServer`; 110 tools declared once in `app/Mcp/Domains`; shared `ToolExecutor` (also used by the assistant). Parity rule: `tests/Mcp/ParityTest.php` + `mcp/EXCLUDED.md`.
+- **Assistant:** `POST /api/assistant/chat` (SSE), `FeatureIndex` generated from the Filament panel + `config/feature_index.php`.
+- **Scheduled commands:** `mcp:notify-expiring`, `clearance:remind-pending`, `sessions:prune` (`routes/console.php`; needs `php artisan schedule:work` or the cron entry).
+- **Seeds:** `seed:test` (deterministic, includes the test-only 2FA user and MCP token), `seed:demo` (alive-looking data, no test-only secrets).
+- **CI:** `.github/workflows/tests.yml` runs `.autopilot/verify.sh`.

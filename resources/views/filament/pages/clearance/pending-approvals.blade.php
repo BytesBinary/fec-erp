@@ -41,7 +41,7 @@
                         <td>{{ $request->student->department?->code }}</td>
                         <td>{{ $request->currentStage?->label }}</td>
                         <td>{{ $request->submitted_at?->diffForHumans() }}</td>
-                        <td><a class="text-primary-600 underline" href="{{ \App\Filament\Pages\Clearance\ViewClearance::getUrl(['record' => $request->id]) }}">Review</a></td>
+                        <td><a class="text-primary-700 underline" href="{{ \App\Filament\Pages\Clearance\ViewClearance::getUrl(['record' => $request->id]) }}">Review</a></td>
                     </tr>
                 @endforeach
                 </tbody>

@@ -14,7 +14,7 @@ Decisions: `docs/DECISIONS.md` · Verify: `.autopilot/verify.sh`
 - [x] **5** — MCP server + full tool catalog, contract/matrix/parity tests (E2E 10), README_MCP.md (2026-10-10; verify: Unit 86, Feature 277, Mcp 82, Browser 17 — all pass)
 - [x] **5M** — MCP access management (E2E 13, 14) (2026-10-10; verify: Unit 86, Feature 310, Mcp 82, Browser 19 — all pass)
 - [x] **6** — AI assistant + feature index (E2E 9) (2026-10-10; verify: Unit 86, Feature 348, Mcp 82, Browser 22 — all pass)
-- [ ] **7** — Hardening, reminders, a11y, seed:demo, CI workflow, docs (IN PROGRESS, not verified)
+- [x] **7** — Hardening, reminders, a11y, seed:demo, CI workflow, docs (2026-10-10; verify: Unit 86, Feature 363, Mcp 82, Browser 26 — all pass)
 
 ## Phase 0 — done
 
@@ -59,11 +59,6 @@ services, `seed:test`.
 - Phase 5: 109 tools (app/Mcp/Domains), ToolExecutor shared with the future assistant, IntegrationService/McpSettingsService already built (5M adds UI, command, E2E 13/14). Never run artisan migrate/other DB commands without the isolated env; browser E2E for users with 2FA must pass the challenge (totpCode(secret, 1)).
 - Phase 6: assistant events via SSE (config assistant.stream=false only for the in-process browser server); FakeProvider::script/reset in tests; feature index metadata in config/feature_index.php (completeness test fails for new menu items). Freeze time in TOTP tests (step boundary flake).
 
-## Phase 7 status (stopped at usage limit, 2026-10-10)
+## Remaining
 
-Done and tested individually (full verify.sh NOT yet re-run): test-seed security fixtures (2FA user, MCP user/token),
-DemoSeeder + `seed:demo` (+tests), `clearance:remind-pending` + `sessions:prune` (+tests, scheduled), config/clearance.php.
-Still TODO: accessibility browser test (assertNoAccessibilityIssues) on new pages, `.github/workflows/tests.yml`,
-update docs/ARCHITECTURE_NOTES.md, run full verify.sh, mark phase 7 done; then independent review (fresh subagent,
-docs/REVIEW.md), MORNING_REPORT.md (start commands, URL, demo login per role: see TestDataset::accountsByRole, password "password"),
-.autopilot/DONE.
+Independent review (fresh subagent → docs/REVIEW.md), MORNING_REPORT.md, .autopilot/DONE.

@@ -19,7 +19,7 @@
                         @foreach($this->batches as $batch)
                             <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
                                 <td class="px-4 py-3">
-                                    <span class="text-lg font-bold text-primary-600 dark:text-primary-400">
+                                    <span class="text-lg font-bold text-primary-700 dark:text-primary-400">
                                         Batch {{ $batch['batch_number'] }}
                                     </span>
                                 </td>

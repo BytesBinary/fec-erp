@@ -12,7 +12,7 @@
         .status { padding: 14px; border-radius: 8px; border: 2px solid; margin: 16px 0; font-weight: 600; }
         .ok { border-color: var(--ok); color: var(--ok); } .bad { border-color: var(--bad); color: var(--bad); } .warn { border-color: var(--warn); color: var(--warn); }
         dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; }
-        dt { color: GrayText; }
+        dt { font-weight: 600; }
         table { width: 100%; border-collapse: collapse; } th, td { text-align: left; padding: 6px; border-bottom: 1px solid GrayText; }
     </style>
 </head>

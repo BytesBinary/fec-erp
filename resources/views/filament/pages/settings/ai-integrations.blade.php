@@ -62,7 +62,7 @@
             <x-filament::section :heading="__('erp.mcp.wizard_title')" data-testid="wizard">
                 <ol class="mb-4 flex flex-wrap gap-2 text-xs" aria-label="Steps">
                     @foreach (['Client', 'Name and limits', 'Confirm with 2FA', 'Connect', 'Test connection'] as $index => $label)
-                        <li class="rounded-full px-3 py-1 {{ $step === $index + 1 ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-600' }}" @if ($step === $index + 1) aria-current="step" @endif>{{ $index + 1 }}. {{ $label }}</li>
+                        <li class="rounded-full px-3 py-1 {{ $step === $index + 1 ? 'bg-primary-800 text-white' : 'bg-gray-100 text-gray-700' }}" @if ($step === $index + 1) aria-current="step" @endif>{{ $index + 1 }}. {{ $label }}</li>
                     @endforeach
                 </ol>
 

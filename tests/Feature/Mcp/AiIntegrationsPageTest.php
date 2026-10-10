@@ -52,7 +52,7 @@ it('refuses to create an integration without 2FA even if the wizard is driven di
     $component = Livewire::test(AiIntegrations::class);
     $component->set('integrationName', 'x')->set('totpCode', '123456')->call('createIntegration');
 
-    expect(McpIntegration::query()->count())->toBe(0);
+    expect(McpIntegration::query()->where('user_id', $this->user->id)->count())->toBe(0);
 });
 
 describe('with 2FA', function () {
@@ -69,7 +69,7 @@ describe('with 2FA', function () {
             ->assertSeeHtml('data-testid="new-token"')
             ->assertSee('shown only once');
 
-        $integration = McpIntegration::query()->firstOrFail();
+        $integration = McpIntegration::query()->where('user_id', $this->user->id)->firstOrFail();
         $token = $component->get('newToken');
 
         expect($integration->access_level)->toBe('read_only')
@@ -87,7 +87,7 @@ describe('with 2FA', function () {
         $component = wizardTo(Livewire::test(AiIntegrations::class))->set('totpCode', '000000')->call('createIntegration');
 
         $component->assertSet('step', 3)->assertSeeHtml('data-testid="wizard-error"')->assertSee('current 6-digit code');
-        expect(McpIntegration::query()->count())->toBe(0);
+        expect(McpIntegration::query()->where('user_id', $this->user->id)->count())->toBe(0);
     });
 
     it('requires a name', function () {
@@ -152,7 +152,7 @@ describe('with 2FA', function () {
 
         Livewire::test(AiIntegrations::class)->callAction('stopAll');
 
-        expect(McpIntegration::query()->active()->count())->toBe(0);
+        expect(McpIntegration::query()->where('user_id', $this->user->id)->active()->count())->toBe(0);
     });
 
     it('does not let one user stop or rename another user\'s integration through the page', function () {

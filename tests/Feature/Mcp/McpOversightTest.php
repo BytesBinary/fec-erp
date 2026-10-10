@@ -98,12 +98,12 @@ it('shows a usage overview of calls and denied calls per day', function () {
 
     $usage = app(IntegrationService::class)->usageOverview($this->admin);
 
-    expect($usage['active'])->toBe(2)
+    expect($usage['active'])->toBe(3)
         ->and(array_sum($usage['calls_per_day']))->toBe(2)
         ->and(array_sum($usage['denied_per_day']))->toBe(1)
         ->and(array_keys($usage['calls_per_day']))->toHaveCount(7);
 
-    Livewire::test(McpOversight::class)->assertSeeHtml('data-testid="active-count">2<');
+    Livewire::test(McpOversight::class)->assertSeeHtml('data-testid="active-count">3<');
 });
 
 it('refuses overview data to anyone without manage-all', function () {

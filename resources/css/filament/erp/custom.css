@@ -92,7 +92,7 @@
 }
 
 .fi-sidebar-item.fi-active > .fi-sidebar-item-btn {
-    background-color: var(--primary-600) !important;
+    background-color: var(--primary-800) !important;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
@@ -290,4 +290,9 @@
 .fi-simple-main {
     border: 1px solid var(--erp-hairline);
     box-shadow: 0 8px 24px color-mix(in srgb, var(--erp-nav) 8%, transparent);
+}
+
+/* Accessible contrast for the upload "Browse" link on white backgrounds. */
+.filepond--label-action {
+    color: var(--primary-700) !important;
 }

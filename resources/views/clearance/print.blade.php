@@ -18,13 +18,13 @@
         .meta { width: 100%; margin: 10px 0; }
         .meta td { border: 0; padding: 2px 4px; }
         .photo { width: 90px; height: 115px; border: 1px solid #555; object-fit: cover; }
-        .photo-empty { width: 90px; height: 115px; border: 1px dashed #555; text-align: center; font-size: 10px; padding-top: 48px; color: #777; }
+        .photo-empty { width: 90px; height: 115px; border: 1px dashed #555; text-align: center; font-size: 10px; padding-top: 48px; color: #595959; }
         .sig { height: 38px; max-width: 130px; }
         .qr { width: 90px; height: 90px; }
         .boxes { width: 100%; margin-top: 18px; }
         .boxes td { border: 0; vertical-align: bottom; }
         .principal-box { border: 1px solid #111; height: 70px; width: 220px; }
-        .seal { border: 1px dashed #555; border-radius: 50%; height: 86px; width: 86px; text-align: center; font-size: 10px; color: #777; padding-top: 34px; }
+        .seal { border: 1px dashed #555; border-radius: 50%; height: 86px; width: 86px; text-align: center; font-size: 10px; color: #595959; padding-top: 34px; }
         .footer { margin-top: 14px; font-size: 10px; text-align: center; color: #333; border-top: 1px solid #999; padding-top: 6px; }
         .watermark { position: absolute; top: 280px; left: 10%; font-size: 90px; color: rgba(200, 0, 0, 0.18); transform: rotate(-30deg); letter-spacing: 6px; pointer-events: none; }
         .toolbar { padding: 10px; background: #f3f4f6; text-align: center; font-family: system-ui, sans-serif; }
