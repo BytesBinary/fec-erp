@@ -67,10 +67,10 @@
                     @forelse ($status['publications'] as $publication)
                         <tr class="border-b border-gray-100 dark:border-white/5" data-testid="publication-row">
                             <td class="py-2 pr-4">{{ App\Models\PortalExam::query()->where('portal_exam_id', $publication->portal_exam_id)->value('title') }}</td>
-                            <td class="py-2 pr-4"><x-filament::badge :color="match ($publication->status) { 'confirmed', 'complete' => 'success', 'shadow' => 'warning', 'awaiting' => 'gray', default => 'info' }">{{ ucfirst($publication->status) }}</x-filament::badge></td>
+                            <td class="whitespace-nowrap py-2 pr-4"><x-filament::badge :color="match ($publication->status) { 'confirmed', 'complete' => 'success', 'shadow' => 'warning', 'awaiting' => 'gray', default => 'info' }">{{ ucfirst($publication->status) }}</x-filament::badge></td>
                             <td class="py-2 pr-4">{{ $publication->detected_at->format('d M Y') }}</td>
                             <td class="py-2 pr-4">{{ $publication->students_total ?: '—' }}</td>
-                            <td class="py-2">
+                            <td class="whitespace-nowrap py-2">
                                 @if ($this->canManage() && in_array($publication->status, ['shadow', 'confirmed'], true))
                                     <x-filament::button size="xs" wire:click="runPublication({{ $publication->id }})" wire:confirm="Queue a result pull for every eligible student of this exam?">Run now</x-filament::button>
                                 @endif

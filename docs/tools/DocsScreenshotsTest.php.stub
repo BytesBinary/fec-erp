@@ -1,0 +1,189 @@
+<?php
+
+/*
+ * Generates the screenshots used in docs/ and the presentation. Not part of the
+ * normal suite: it lives in docs/tools/DocsScreenshotsTest.php.stub, and is copied here
+ * only to run it (see docs/README.md).
+ */
+
+use App\Enums\EmailDeliveryStatus;
+use App\Enums\PortalExamKind;
+use App\Enums\ResultPullStatus;
+use App\Models\ClearanceRequest;
+use App\Models\EmailDelivery;
+use App\Models\EmailTemplate;
+use App\Models\PortalCheckRun;
+use App\Models\PortalExam;
+use App\Models\PortalExamResult;
+use App\Models\PortalProbe;
+use App\Models\PortalPublication;
+use App\Models\ResultPull;
+use App\Models\Student;
+use App\Services\Notifications\NotificationRules;
+use App\Services\ResultPortal\ExamListing;
+use App\Services\ResultPortal\PortalResultImporter;
+use App\Services\ResultPortal\PortalResultRow;
+use Database\Seeders\DemoSeeder;
+use Database\Seeders\Testing\TestDataset as T;
+
+function docsLogin(string $email): Pest\Browser\Api\AwaitableWebpage
+{
+    return visit('/login')->resize(1440, 900)
+        ->type('[id="form.email"]', $email)
+        ->type('[id="form.password"]', 'password')
+        ->click('button[type=submit]')
+        ->wait(2);
+}
+
+/**
+ * Logs in as one role and captures the dashboard plus the given pages.
+ *
+ * @param  array<string, string>  $pages  slug => path
+ */
+function docsShots(string $group, string $email, array $pages): void
+{
+    $page = docsLogin($email);
+    $page->wait(2)->screenshot(filename: "{$group}__dashboard");
+
+    foreach ($pages as $slug => $path) {
+        $page->navigate($path)->wait(2)->screenshot(filename: "{$group}__{$slug}");
+    }
+}
+
+beforeEach(function () {
+    $this->seed(DemoSeeder::class);
+    config(['assistant.provider' => 'fake', 'assistant.stream' => false, 'notifications.enabled' => true, 'result_portal.enabled' => true]);
+    App\Services\Assistant\Providers\FakeProvider::reset();
+
+    $exams = [
+        [14, 966, '1st year 1st Semester Examination of 2023', 2023, 1, PortalExamKind::Regular],
+        [14, 1221, '1st year 2nd Semester Examination of 2023', 2023, 2, PortalExamKind::Regular],
+        [14, 1563, '2nd year 1st Semester Examination of 2024', 2024, 3, PortalExamKind::Regular],
+        [14, 1776, '1st year 2nd Semester Improvement Examination of 2024 (Retake/Improvement)', 2024, 2, PortalExamKind::Improvement],
+        [14, 1889, '3rd year 2nd Semester Examination of 2024', 2024, 6, PortalExamKind::Regular],
+        [13, 1860, '1st year 2nd Semester Special Improvement Examination of 2024', 2024, 2, PortalExamKind::SpecialImprovement],
+        [13, 1700, '2nd year 1st Semester Examination of 2024', 2024, 3, PortalExamKind::Regular],
+        [12, 1894, '3rd year 2nd Semester Examination of 2024 (New Syllabus)', 2024, 6, PortalExamKind::Regular],
+        [12, 1580, '2nd year 2nd Semester Examination of 2023', 2023, 4, PortalExamKind::Regular],
+    ];
+
+    foreach ($exams as [$program, $id, $title, $year, $semester, $kind]) {
+        $name = [14 => 'B.Sc. in Computer Science and Engineering', 13 => 'B.Sc. in Electrical and Electronic Engineering', 12 => 'B.Sc. in Civil Engineering'][$program];
+        PortalExam::factory()->create(['portal_exam_id' => $id, 'program_id' => $program, 'title' => "{$name} {$title}", 'exam_year' => $year, 'semester' => $semester, 'kind' => $kind, 'status' => $id === 1889 ? 'detected' : 'published']);
+    }
+
+    PortalPublication::factory()->create(['portal_exam_id' => 1889, 'program_id' => 14, 'status' => 'shadow', 'mode' => 'shadow', 'detected_at' => now()->subDays(2), 'confirmed_at' => now()->subDay(), 'students_total' => 0]);
+    PortalPublication::factory()->create(['portal_exam_id' => 1894, 'program_id' => 12, 'status' => 'awaiting', 'detected_at' => now()->subDays(3), 'next_check_at' => now()->addDay(), 'check_count' => 3]);
+    PortalPublication::factory()->create(['portal_exam_id' => 1776, 'program_id' => 14, 'status' => 'confirmed', 'detected_at' => now()->subDays(20), 'confirmed_at' => now()->subDays(19), 'students_total' => 24]);
+    PortalProbe::factory()->create(['portal_exam_id' => 1889, 'outcome' => 'found', 'checked_at' => now()->subDay()]);
+    PortalProbe::factory()->create(['portal_exam_id' => 1894, 'outcome' => 'not_verified', 'checked_at' => now()->subHours(5)]);
+    PortalCheckRun::factory()->create(['kind' => 'daily', 'status' => 'success', 'exams_total' => 9, 'new_exams' => 1, 'publications_confirmed' => 1, 'started_at' => now()->subHours(3), 'finished_at' => now()->subHours(3)]);
+    PortalCheckRun::factory()->create(['kind' => 'daily', 'status' => 'failed', 'message' => 'The portal could not be reached: HTTP 503', 'started_at' => now()->subDay(), 'finished_at' => now()->subDay()]);
+
+    $students = Student::query()->with('user')->whereHas('department', fn ($query) => $query->where('code', T::DEPT_CSE))->limit(8)->get();
+    $statuses = [ResultPullStatus::Success, ResultPullStatus::Success, ResultPullStatus::Success, ResultPullStatus::Failed, ResultPullStatus::Pending, ResultPullStatus::Skipped, ResultPullStatus::Success, ResultPullStatus::Queued];
+    $messages = [
+        '9 result(s) read, 9 new or changed.', '10 result(s) read, 10 new or changed.', '2 result(s) read, 2 new or changed.',
+        'The portal answered, but its result page layout is not recognised yet.', 'No result for this student in this exam yet (check 1 of 2).',
+        'The registration number is not numeric; the portal only accepts digits.', '9 result(s) read, 0 new or changed.', null,
+    ];
+
+    foreach ($students as $index => $student) {
+        ResultPull::factory()->create(['student_id' => $student->id, 'status' => $statuses[$index], 'trigger' => $index % 2 ? 'publication' : 'student_created', 'message' => $messages[$index], 'results_found' => $statuses[$index] === ResultPullStatus::Success ? 9 : 0, 'results_changed' => $statuses[$index] === ResultPullStatus::Success ? 9 : 0, 'exams_checked' => 5, 'finished_at' => now()->subHours($index + 1)]);
+    }
+
+    $student = Student::query()->where('user_id', datasetUser(T::STUDENT_ELIGIBLE)->id)->firstOrFail();
+    $pull = ResultPull::factory()->create(['student_id' => $student->id, 'status' => ResultPullStatus::Success]);
+    $importer = app(PortalResultImporter::class);
+    $regular = new ExamListing(1221, 'B.Sc. in Computer Science and Engineering 1st year 2nd Semester Examination of 2023', PortalExamKind::Regular, 2, 2023);
+    $improvement = new ExamListing(1776, 'B.Sc. in Computer Science and Engineering 1st year 2nd Semester Improvement Examination of 2024 (Retake/Improvement)', PortalExamKind::Improvement, 2, 2024);
+
+    $importer->import($student, $pull, [
+        new PortalResultRow($regular, 'CSE-1201', 'Fundamentals of Programming', null, 'A-', 3.5),
+        new PortalResultRow($regular, 'CSE-1202', 'Digital Logic Design', null, 'C+', 2.5),
+        new PortalResultRow($regular, 'PHY-1203', 'Physics', null, 'F', 0.0),
+        new PortalResultRow($regular, 'MATH-1204', 'Methods of Integration, Differential Equations and Series', null, 'F', 0.0),
+        new PortalResultRow($regular, 'ENG-1205', 'Developing English Language Skills', null, 'B+', 3.25),
+        new PortalResultRow($improvement, 'PHY-1203', 'Physics', null, 'D', 2.0),
+        new PortalResultRow($improvement, 'MATH-1204', 'Methods of Integration, Differential Equations and Series', null, 'B-', 2.75),
+    ]);
+    PortalExamResult::factory()->create(['student_id' => $student->id, 'portal_exam_id' => 1221, 'exam_title' => $regular->title, 'gpa' => 2.53, 'cgpa' => 2.86, 'outcome' => 'Promoted', 'backlog_codes' => ['PHY-1203', 'MATH-1204']]);
+
+    app(NotificationRules::class)->sync();
+    EmailTemplate::factory()->create(['event_key' => 'student.result_pulled', 'name' => 'Short result mail', 'subject' => 'Your result is ready: {exam}', 'body' => "Hello {recipient_name},\n\nYour result for {exam} is saved. Sign in to see it: {link}"]);
+
+    foreach ([
+        [EmailDeliveryStatus::Sent, 'security.new_device_login', 'New sign-in to your account', null],
+        [EmailDeliveryStatus::Sent, 'student.result_pulled', 'Your result is available', null],
+        [EmailDeliveryStatus::Sent, 'clearance.ready_for_collection', 'Your clearance is ready for collection', null],
+        [EmailDeliveryStatus::Failed, 'library.loan_overdue', 'A library book is overdue', 'SMTP connection refused'],
+        [EmailDeliveryStatus::Held, 'result.submitted', 'Results are waiting for your approval', null],
+        [EmailDeliveryStatus::Skipped, 'hall.assigned', 'You were assigned to a hall', 'The recipient has no valid email address.'],
+        [EmailDeliveryStatus::Queued, 'student.grade_changed', 'A retake or improvement result was recorded', null],
+    ] as [$status, $event, $subject, $error]) {
+        EmailDelivery::factory()->create(['status' => $status, 'event_key' => $event, 'subject' => $subject, 'last_error' => $error, 'recipient_email' => fake()->safeEmail(), 'sent_at' => $status === EmailDeliveryStatus::Sent ? now()->subMinutes(rand(5, 500)) : null, 'body' => "Hello,\n\n{$subject}.\n\nOpen: https://erp.example/"]);
+    }
+});
+
+it('captures the whole application', function () {
+    visit('/login')->resize(1440, 900)->wait(1)->screenshot(filename: 'public__login');
+
+    $request = ClearanceRequest::query()->with('student.user')->where('status', 'collected')->first() ?? ClearanceRequest::query()->with('student.user')->firstOrFail();
+    $ready = ClearanceRequest::query()->with('student.user')->where('status', 'ready_for_collection')->first() ?? $request;
+    $rejected = ClearanceRequest::query()->with('student.user')->where('status', 'rejected')->first() ?? $request;
+    $atHall = ClearanceRequest::query()->with('student.user')->where('status', 'pending')->latest('id')->first() ?? $request;
+
+    visit("/verify/clearance/{$request->verify_code}")->resize(1440, 900)->wait(2)->screenshot(filename: 'public__clearance_verify');
+
+    docsShots('super_admin', T::SUPER_ADMIN, [
+        'users' => '/users', 'roles' => '/shield/roles', 'audit_log' => '/audit-logs',
+        'email_notifications' => '/email-notifications', 'email_templates' => '/email-templates', 'email_deliveries' => '/email-deliveries',
+        'portal_monitor' => '/portal-monitor', 'student_results' => '/student-results',
+        'mcp_integrations' => '/security/mcp-integrations', 'two_factor_policy' => '/security/two-factor-policy',
+        'institution_settings' => '/institution-settings', 'appearance' => '/appearance', 'profile_fields' => '/settings/profile-fields',
+        'grading_scale' => '/settings/grading-scale', 'clearance_stages' => '/settings/clearance-stages',
+        'students' => '/students', 'student_create' => '/students/create', 'teachers' => '/teachers', 'staff' => '/staff',
+        'departments' => '/departments', 'programs' => '/programs', 'semesters' => '/semesters', 'courses' => '/courses', 'batches' => '/batches', 'batch_overview' => '/batch-overview',
+        'halls' => '/halls', 'notices' => '/notices', 'designations' => '/designations',
+        'exam_types' => '/exam-types', 'exam_halls' => '/exam-halls', 'exam_duties' => '/exam-duties', 'exam_duty_report' => '/exam-duty-report',
+        'routine' => '/routine', 'master_routine' => '/master-routine-report', 'individual_routine' => '/individual-routine-report', 'assign_teachers' => '/assign-teachers', 'credit_count_report' => '/credit-count-report',
+        'clearance_desk' => '/clearance/desk', 'clearance_pending' => '/clearance/pending', 'clearance_request' => "/clearance/requests/{$ready->id}",
+        'hall_residents' => '/campus/hall-residents', 'library_loans' => '/campus/library-loans', 'result_entry' => '/result-entry',
+        'devices' => '/security/devices', 'two_factor' => '/security/two-factor', 'ai_integrations' => '/settings/ai-integrations', 'signature' => '/profile/signature',
+    ]);
+
+    docsShots('admin_office', T::ADMIN_OFFICE, [
+        'clearance_desk' => '/clearance/desk', 'portal_monitor' => '/portal-monitor', 'student_results' => '/student-results',
+        'email_deliveries' => '/email-deliveries', 'students' => '/students', 'clearance_request' => "/clearance/requests/{$ready->id}",
+        'clearance_print' => "/clearance/{$ready->id}/print",
+    ]);
+
+    docsShots('head_of_institution', T::HEAD_OF_INSTITUTION, ['clearance_pending' => '/clearance/pending', 'signature' => '/profile/signature']);
+    docsShots('principal', T::PRINCIPAL, ['students' => '/students', 'batch_overview' => '/batch-overview']);
+    docsShots('department_head', T::DEPT_HEAD_CSE, ['clearance_pending' => '/clearance/pending', 'students' => '/students', 'student_results' => '/student-results', 'courses' => '/courses', 'result_entry' => '/result-entry']);
+    docsShots('hall_provost', T::PROVOST_A, ['clearance_pending' => '/clearance/pending', 'hall_residents' => '/campus/hall-residents', 'notices' => '/notices']);
+    docsShots('librarian', T::LIBRARIAN, ['clearance_pending' => '/clearance/pending', 'library_loans' => '/campus/library-loans']);
+    docsShots('teacher', T::TEACHER, ['result_entry' => '/result-entry', 'individual_routine' => '/individual-routine-report', 'notices' => '/notices']);
+
+    docsShots('student', T::STUDENT_ELIGIBLE, ['results' => '/results', 'results_print' => '/results/print', 'clearance_apply' => '/clearance/apply', 'profile' => '/profile/complete', 'devices' => '/security/devices', 'two_factor' => '/security/two-factor', 'ai_integrations' => '/settings/ai-integrations']);
+
+    $page = docsLogin(T::STUDENT_ELIGIBLE)->navigate('/results')->wait(2);
+    $page->click('#assistant-toggle')->wait(1)->fill('#assistant-input', 'where are my results')->click('#assistant-send')->wait(3)->screenshot(filename: 'student__assistant');
+
+    docsShots('student_incomplete', T::STUDENT_INCOMPLETE, ['profile_gate' => '/results']);
+    docsShots('student_clearance_rejected', $rejected->student->user->email, ['my_clearance' => '/clearance/my']);
+    docsShots('student_clearance_ready', $ready->student->user->email, ['my_clearance' => '/clearance/my']);
+    docsShots('student_clearance_waiting', $atHall->student->user->email, ['my_clearance' => '/clearance/my']);
+
+    $teacher = datasetUser(T::TEACHER);
+    mcpIntegrationFor($teacher);
+
+    $page = docsLogin(T::TEACHER);
+    $page->wait(1)->screenshot(filename: 'two_factor__challenge');
+    $page->fill('input[autocomplete=one-time-code]', totpCode('JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP', 1))->click('Verify')->wait(2);
+    $page->navigate('/security/two-factor')->wait(2)->screenshot(filename: 'two_factor__enabled');
+    $page->navigate('/settings/ai-integrations')->wait(2)->screenshot(filename: 'two_factor__ai_integrations');
+    $page->click('#start-wizard')->wait(2)->screenshot(filename: 'two_factor__ai_wizard');
+
+    expect(true)->toBeTrue();
+});

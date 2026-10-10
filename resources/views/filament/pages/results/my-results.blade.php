@@ -73,9 +73,9 @@
                                 <td class="py-2 pr-4">{{ $row->course_code }}@if ($row->course_title) <span class="text-xs text-gray-500">{{ $row->course_title }}</span>@endif</td>
                                 <td class="py-2 pr-4">{{ $row->letter }}</td>
                                 <td class="py-2 pr-4">{{ number_format((float) $row->grade_point, 2) }}</td>
-                                <td class="py-2 pr-4">
+                                <td class="whitespace-nowrap py-2 pr-4">
                                     @if ($row->change_type)
-                                        <x-filament::badge :color="$row->change_type->color()" data-testid="portal-change">{{ $row->change_type->label() }} ({{ $row->previous_letter }} → {{ $row->letter }})</x-filament::badge>
+                                        <x-filament::badge :color="$row->change_type->color()" class="!max-w-none whitespace-nowrap" data-testid="portal-change">{{ $row->change_type->label() }} ({{ $row->previous_letter }} → {{ $row->letter }})</x-filament::badge>
                                     @else
                                         —
                                     @endif

@@ -224,6 +224,17 @@ describe('what the student sees', function () {
     });
 });
 
+describe('status labels', function () {
+    it('has a readable label for every pull status and leaves the clearance labels alone', function () {
+        foreach (ResultPullStatus::cases() as $status) {
+            expect($status->label())->not->toStartWith('erp.', $status->value);
+        }
+
+        expect(ResultPullStatus::Pending->label())->toBe('Waiting for result')
+            ->and(__('erp.clearance.stage_statuses.pending'))->toBe('Pending');
+    });
+});
+
 describe('the Student results screen', function () {
     it('lets the admin office see successes and failures and retry the failed ones', function () {
         $service = app(ResultPullService::class);
