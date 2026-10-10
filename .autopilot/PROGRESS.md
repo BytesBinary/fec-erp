@@ -12,7 +12,7 @@ Decisions: `docs/DECISIONS.md` · Verify: `.autopilot/verify.sh`
 - [x] **3** — Clearance core (E2E 3 to READY, 4, 5, 6) (2026-10-10; verify: Unit 86, Feature 253, Browser 14 — all pass)
 - [x] **4** — Clearance desk, print/PDF, verification (E2E 3 full, 7, 8) (2026-10-10; verify: Unit 86, Feature 277, Browser 16 — all pass)
 - [x] **5** — MCP server + full tool catalog, contract/matrix/parity tests (E2E 10), README_MCP.md (2026-10-10; verify: Unit 86, Feature 277, Mcp 82, Browser 17 — all pass)
-- [ ] **5M** — MCP access management (E2E 13, 14)
+- [x] **5M** — MCP access management (E2E 13, 14) (2026-10-10; verify: Unit 86, Feature 310, Mcp 82, Browser 19 — all pass)
 - [ ] **6** — AI assistant + feature index (E2E 9)
 - [ ] **7** — Hardening, reminders, a11y, seed:demo, CI workflow, docs
 
@@ -33,7 +33,7 @@ Decisions: `docs/DECISIONS.md` · Verify: `.autopilot/verify.sh`
 
 - (none)
 
-## Next up (Phase 5M)
+## Next up (Phase 6)
 
 See ARCHITECTURE_NOTES §10 "Phase 1". Start with migrations (is_active, role rename, role_scopes,
 audit_logs, programs, semesters, notices), `RoleKey` enum, `config/erp.php`, `Authorizer`, `AuditLogger`,

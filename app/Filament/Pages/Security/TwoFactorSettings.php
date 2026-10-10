@@ -16,6 +16,7 @@ use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use Livewire\Attributes\Url;
 use UnitEnum;
 
 /**
@@ -47,6 +48,9 @@ class TwoFactorSettings extends Page
     public array $recoveryCodes = [];
 
     public bool $savedRecoveryCodes = false;
+
+    #[Url]
+    public ?string $from = null;
 
     public static function getNavigationLabel(): string
     {
@@ -150,6 +154,10 @@ class TwoFactorSettings extends Page
 
         $this->recoveryCodes = [];
         $this->savedRecoveryCodes = false;
+
+        if ($this->from === 'ai-integrations') {
+            $this->redirect(\App\Filament\Pages\Settings\AiIntegrations::getUrl());
+        }
     }
 
     public function regenerateAction(): Action

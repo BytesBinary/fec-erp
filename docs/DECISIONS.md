@@ -167,3 +167,10 @@ Autopilot run: decisions are made without waiting for the product owner (see
 
 ## D-019 — Clearance approver matching and signatures
 - **Decision:** An approver may act only if they hold the stage's approver role *and* that role's own scope covers the student (hall → current residency hall, department → student's department, global → any). Signatures are private PNGs (`local` disk); each approval copies the file into `clearance-signatures/{request}/` and stores its SHA-256, which is part of the hash chain. Skipped stages are recorded as `skipped` rows in the chain.
+
+## D-020 — MCP implementation shape
+- **Decision:** `laravel/mcp` with one generic `RegisteredTool` per `ToolDefinition` (109 tools in `app/Mcp/Domains`). `tools/list` filters by the authenticated user and integration access level; `tools/call` bypasses that filter and runs `ToolExecutor`, so guessed names return `FORBIDDEN`. `ToolExecutor` is channel-agnostic and is what the assistant (phase 6) calls. CRUD tool parameters are derived from each service's own validation rules. Parity: `tests/Mcp/ParityTest.php` + `mcp/EXCLUDED.md`.
+- **Change:** Add tools in `app/Mcp/Domains/*Tools.php` and regenerate the role × tool fixture.
+
+## D-021 — Client snippets
+- **Decision:** Connection snippets live in `config/mcp_clients.php` (one file). The formats (Claude Code `claude mcp add --transport http`, Claude Desktop via `mcp-remote`, Cursor `mcpServers` + `url`/`headers`, VS Code `servers` + `type: http`) are from the clients' public documentation as known on 2026-10-10 and could not be re-fetched during the unattended run; update the file if a client changes format.

@@ -22,6 +22,7 @@ Format: one entry per line, `` `Class::method` `` or `` `Class::*` `` or `` `*::
 - `App\Services\Security\SessionTracker::revokeAll` — revoking sessions is web-only.
 - `App\Services\Security\SessionTracker::prune` — scheduled housekeeping.
 - `App\Services\Security\DeviceParser::*` — internal user-agent parsing.
+- `App\Services\Mcp\ClientSnippets::*` — renders the connection snippets of the web setup wizard.
 - `App\Services\Mcp\IntegrationService::*` — creating, renaming and stopping AI integrations is web-only (needs a fresh 2FA code).
 - `App\Services\Mcp\McpSettingsService::*` — global MCP switches are web-only (super admin).
 - `App\Services\Clearance\StaffSignatureService::*` — signature images are uploaded through the web (binary file, personal).
