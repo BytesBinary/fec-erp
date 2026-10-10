@@ -84,23 +84,29 @@
         </div>
     </x-filament::section>
 
-    <x-filament::section heading="Recent probe checks" collapsible collapsed>
-        <ul class="space-y-1 text-sm">
+    <x-filament::section>
+        <details>
+            <summary class="cursor-pointer text-base font-semibold">Recent probe checks</summary>
+        <ul class="mt-3 space-y-1 text-sm">
             @forelse ($status['probes'] as $probe)
                 <li data-testid="probe-row">{{ $probe->checked_at->format('d M H:i') }} — exam {{ $probe->portal_exam_id }}: <strong>{{ str_replace('_', ' ', $probe->outcome) }}</strong> @if ($probe->message)<span class="text-gray-500">({{ \Illuminate\Support\Str::limit($probe->message, 80) }})</span>@endif</li>
             @empty
                 <li class="text-gray-500">None yet.</li>
             @endforelse
         </ul>
+        </details>
     </x-filament::section>
 
-    <x-filament::section heading="Recent runs" collapsible collapsed>
-        <ul class="space-y-1 text-sm">
+    <x-filament::section>
+        <details>
+            <summary class="cursor-pointer text-base font-semibold">Recent runs</summary>
+        <ul class="mt-3 space-y-1 text-sm">
             @forelse ($status['runs'] as $run)
                 <li>{{ $run->started_at->format('d M H:i') }} — {{ $run->kind }}: <strong>{{ $run->status }}</strong>, {{ $run->new_exams }} new exam(s), {{ $run->publications_confirmed }} confirmed @if ($run->message)<span class="text-gray-500">— {{ \Illuminate\Support\Str::limit($run->message, 100) }}</span>@endif</li>
             @empty
                 <li class="text-gray-500">None yet.</li>
             @endforelse
         </ul>
+        </details>
     </x-filament::section>
 </x-filament-panels::page>

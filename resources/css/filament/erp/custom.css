@@ -379,3 +379,21 @@
     align-items: flex-end;
     gap: 1rem;
 }
+
+/* Breadcrumb links: the default grey is below 4.5:1 on the cream background. */
+.fi-breadcrumbs-item-label {
+    color: #57534e;
+}
+
+:where(.dark, .dark *) .fi-breadcrumbs-item-label {
+    color: #d6d3d1;
+}
+
+/* Empty-cell placeholders ("—", "Default text"): the default light grey fails 4.5:1. */
+.fi-ta-placeholder {
+    color: #57534e;
+}
+
+:where(.dark, .dark *) .fi-ta-placeholder {
+    color: #d6d3d1;
+}

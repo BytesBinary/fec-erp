@@ -21,6 +21,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -73,6 +74,7 @@ class EmailDeliveryResource extends Resource
                 TextColumn::make('attempts'),
                 TextColumn::make('last_error')->label('Problem')->wrap()->limit(70)->placeholder('—'),
             ])
+            ->filtersLayout(FiltersLayout::AboveContent)
             ->filters([
                 SelectFilter::make('status')->options(collect(EmailDeliveryStatus::cases())->mapWithKeys(fn (EmailDeliveryStatus $status): array => [$status->value => $status->label()])->all()),
                 SelectFilter::make('event_key')->label('Event')->options(collect($registry->all())->map(fn (array $event): string => $event['label'])->all())->searchable(),

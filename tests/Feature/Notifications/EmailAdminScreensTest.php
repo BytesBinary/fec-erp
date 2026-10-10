@@ -121,7 +121,7 @@ describe('Email deliveries', function () {
 
         $component = Livewire::actingAs($office)->test(ListEmailDeliveries::class)
             ->assertCanSeeTableRecords([$sent, $failed])
-            ->set('activeTab', 'failed')
+            ->filterTable('status', 'failed')
             ->assertCanSeeTableRecords([$failed])
             ->assertCanNotSeeTableRecords([$sent])
             ->assertSee('SMTP connection refused');

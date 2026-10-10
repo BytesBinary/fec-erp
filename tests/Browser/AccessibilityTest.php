@@ -42,6 +42,14 @@ it('has no critical or serious accessibility issues on the AI integration and se
     }
 });
 
+it('has no critical or serious accessibility issues on the portal and email admin pages', function () {
+    $page = uiLogin(T::SUPER_ADMIN);
+
+    foreach (['/portal-monitor', '/student-results', '/email-notifications', '/email-templates', '/email-deliveries'] as $path) {
+        $page->navigate($path)->wait(2)->assertNoAccessibilityIssues();
+    }
+});
+
 it('has no critical or serious accessibility issues in the AI integrations wizard', function () {
     ['token' => $unused] = mcpIntegrationFor(datasetUser(T::TEACHER));
 

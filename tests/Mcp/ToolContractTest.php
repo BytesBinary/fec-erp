@@ -46,8 +46,10 @@ it('declares a strict, documented schema for every tool', function () {
 });
 
 it('requires confirm on every destructive tool and marks it with destructiveHint', function () {
+    $listed = collect($this->client->tools());
+
     foreach (app(ToolRegistry::class)->definitions() as $definition) {
-        $tool = collect($this->client->tools())->firstWhere('name', $definition->name);
+        $tool = $listed->firstWhere('name', $definition->name);
 
         expect($tool['annotations']['destructiveHint'])->toBe($definition->destructive);
 

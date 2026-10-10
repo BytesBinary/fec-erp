@@ -21,6 +21,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -91,6 +92,7 @@ class ResultPullResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('finished_at')->label('Finished')->since()->placeholder('—')->sortable(),
             ])
+            ->filtersLayout(FiltersLayout::AboveContent)
             ->filters([
                 SelectFilter::make('status')
                     ->options(collect(ResultPullStatus::cases())->mapWithKeys(fn (ResultPullStatus $status): array => [$status->value => $status->label()])->all()),

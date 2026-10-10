@@ -229,6 +229,9 @@ describe('the Student results screen', function () {
         $service = app(ResultPullService::class);
         $this->source->willFail(ResultPortalException::layoutUnknown())->willReturn([portalRow(100, 'CSE-1101', 'A', 4.0)]);
 
+        Student::query()->whereKey(studentFor(T::STUDENT_ELIGIBLE)->id)->update(['registration_number' => '2022000011']);
+        Student::query()->whereKey(studentFor(T::STUDENT_NON_RESIDENT)->id)->update(['registration_number' => '2022000012']);
+
         $failed = $service->queueFor(studentFor(T::STUDENT_ELIGIBLE), 'manual');
         $success = $service->queueFor(studentFor(T::STUDENT_NON_RESIDENT), 'manual');
 
@@ -255,6 +258,11 @@ describe('the Student results screen', function () {
         $service = app(ResultPullService::class);
         $ownStudent = studentFor(T::STUDENT_ELIGIBLE);
         $otherStudent = studentFor(T::STUDENT_LIBRARY_LOAN);
+
+        Student::query()->whereKey($ownStudent->id)->update(['registration_number' => '2022000013']);
+        Student::query()->whereKey($otherStudent->id)->update(['registration_number' => '2022000014']);
+        $ownStudent->refresh();
+        $otherStudent->refresh();
 
         $own = $service->queueFor($ownStudent, 'manual');
         $other = $service->queueFor($otherStudent, 'manual');

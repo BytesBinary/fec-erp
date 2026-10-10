@@ -65,6 +65,15 @@ class RoleSeeder extends Seeder
     }
 
     /**
+     * Permission names Shield generated, kept for the life of the process so
+     * seeding a database many times (tests) does not rediscover every
+     * resource, page and widget each time.
+     *
+     * @var list<string>|null
+     */
+    private static ?array $shieldPermissionNames = null;
+
+    /**
      * Shield guards every resource, page and widget (including the Roles
      * screen itself) with a permission. Generate them all and give them to
      * the super admin, otherwise a freshly seeded database hides the role
@@ -72,12 +81,23 @@ class RoleSeeder extends Seeder
      */
     protected function grantAllShieldPermissionsTo(Role $role): void
     {
-        Artisan::call('shield:generate', [
-            '--all' => true,
-            '--panel' => 'erp',
-            '--option' => 'permissions',
-            '--no-interaction' => true,
-        ]);
+        if (self::$shieldPermissionNames === null) {
+            Artisan::call('shield:generate', [
+                '--all' => true,
+                '--panel' => 'erp',
+                '--option' => 'permissions',
+                '--no-interaction' => true,
+            ]);
+
+            self::$shieldPermissionNames = Permission::query()->where('guard_name', 'web')->pluck('name')->all();
+        } else {
+            $existing = Permission::query()->where('guard_name', 'web')->pluck('name')->all();
+            $missing = array_diff(self::$shieldPermissionNames, $existing);
+
+            if ($missing !== []) {
+                Permission::query()->insert(array_map(fn (string $name): array => ['name' => $name, 'guard_name' => 'web', 'created_at' => now(), 'updated_at' => now()], array_values($missing)));
+            }
+        }
 
         $role->syncPermissions(Permission::query()->where('guard_name', 'web')->get());
     }
