@@ -182,3 +182,10 @@ Autopilot run: decisions are made without waiting for the product owner (see
 ## D-023 — Spec coverage review deviations
 - **Decision:** Recorded as deliberate: no geo-IP location (spec only allows it when a local database already exists), no `accountant` role (no finance module), approvers see hall dues and library loans only (no discipline, room-handover or lab-equipment data model exists), no password/OTP re-confirmation on approval (pre-made decision 9), no Bangla UI (decision 11), e-mail/SMS through the pluggable log-only messenger (D-013/D-015). Coverage measurement (>= 90%) is left to CI once a coverage driver is installed.
 - **Change:** `config/clearance.php`, `config/security.php`, `config/erp.php`.
+
+## D-024 — Role management UI and Settings navigation (2026-10-10)
+
+- **Decision:** keep the spec RBAC (central `Authorizer` over spatie roles/permissions) and manage it through the existing Shield **Roles** screen (`/shield/roles`, "Security & Access → Roles & permissions"). Roles and permissions live in the same spatie tables, so creating or editing a role there changes behaviour immediately (no cache lag).
+- **Why the screen had vanished:** Shield guards the Roles screen, pages and dashboard widgets with permissions (`ViewAny:Role`, `View:DashboardStatsOverview`, …) that a freshly seeded database never created, so even the super admin could not see them. `RoleSeeder` now runs `shield:generate --option=permissions` for the panel and gives every permission to `super_admin`.
+- **Limitation:** a role created in the UI has a *global* data scope unless it is listed in `config/erp.php` `rbac.role_scopes` (department / hall / course / self). There is no UI for the scope yet; grant such roles narrowly.
+- **Navigation:** the Settings group had 12+ entries. It is split into `Settings` (institution, appearance, designations, profile fields, grading scale, clearance stages), `My Account` (devices, two-factor, AI integrations, signature, complete profile) and `Security & Access` (users, roles, two-factor policy, MCP oversight, audit log).

@@ -34,7 +34,7 @@ class CompleteProfile extends Page
 {
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedIdentification;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Settings';
+    protected static string|UnitEnum|null $navigationGroup = 'My Account';
 
     protected static ?int $navigationSort = 5;
 

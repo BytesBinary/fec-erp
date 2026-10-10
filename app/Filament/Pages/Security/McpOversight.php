@@ -28,9 +28,9 @@ class McpOversight extends Page
 {
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedEye;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Settings';
+    protected static string|UnitEnum|null $navigationGroup = 'Security & Access';
 
-    protected static ?int $navigationSort = 64;
+    protected static ?int $navigationSort = 3;
 
     protected static ?string $slug = 'security/mcp-integrations';
 

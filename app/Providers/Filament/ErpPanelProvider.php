@@ -68,6 +68,8 @@ class ErpPanelProvider extends PanelProvider
                 'Clearance',
                 'Campus',
                 'Settings',
+                'My Account',
+                'Security & Access',
             ])
             ->sidebarCollapsibleOnDesktop(true)
             ->brandName(fn (): string => InstitutionSetting::current()->institution_name ?? 'ERP')

@@ -24,9 +24,9 @@ class AuditLogResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentList;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Settings';
+    protected static string|UnitEnum|null $navigationGroup = 'Security & Access';
 
-    protected static ?int $navigationSort = 90;
+    protected static ?int $navigationSort = 9;
 
     protected static ?string $slug = 'audit-logs';
 

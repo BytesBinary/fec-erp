@@ -27,9 +27,9 @@ class TwoFactorSettings extends Page
 {
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShieldCheck;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Settings';
+    protected static string|UnitEnum|null $navigationGroup = 'My Account';
 
-    protected static ?int $navigationSort = 61;
+    protected static ?int $navigationSort = 2;
 
     protected static ?string $slug = 'security/two-factor';
 

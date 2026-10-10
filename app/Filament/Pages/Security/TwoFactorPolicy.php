@@ -20,9 +20,9 @@ class TwoFactorPolicy extends Page
 {
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedLockClosed;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Settings';
+    protected static string|UnitEnum|null $navigationGroup = 'Security & Access';
 
-    protected static ?int $navigationSort = 62;
+    protected static ?int $navigationSort = 2;
 
     protected static ?string $slug = 'security/two-factor-policy';
 

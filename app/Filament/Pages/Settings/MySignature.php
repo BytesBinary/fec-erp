@@ -27,9 +27,9 @@ class MySignature extends Page
 {
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPencil;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Settings';
+    protected static string|UnitEnum|null $navigationGroup = 'My Account';
 
-    protected static ?int $navigationSort = 7;
+    protected static ?int $navigationSort = 4;
 
     protected static ?string $slug = 'profile/signature';
 

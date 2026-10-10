@@ -3,8 +3,8 @@
 namespace Database\Seeders;
 
 use App\Enums\RoleKey;
-use BezhanSalleh\FilamentShield\Facades\FilamentShield;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Artisan;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -53,7 +53,7 @@ class RoleSeeder extends Seeder
     {
         $superAdmin = Role::findOrCreate(RoleKey::SuperAdmin->value, 'web');
 
-        $this->grantDashboardWidgetsTo($superAdmin);
+        $this->grantAllShieldPermissionsTo($superAdmin);
 
         foreach (self::ROLES as $name => $permissions) {
             $role = Role::firstOrCreate(['name' => $name, 'guard_name' => 'web']);
@@ -65,19 +65,20 @@ class RoleSeeder extends Seeder
     }
 
     /**
-     * The dashboard widgets are Shield-guarded; without their permissions the
-     * super admin would see an empty dashboard on a freshly seeded database.
+     * Shield guards every resource, page and widget (including the Roles
+     * screen itself) with a permission. Generate them all and give them to
+     * the super admin, otherwise a freshly seeded database hides the role
+     * editor and the dashboard widgets even from the super admin.
      */
-    protected function grantDashboardWidgetsTo(Role $role): void
+    protected function grantAllShieldPermissionsTo(Role $role): void
     {
-        $names = collect(FilamentShield::getWidgets() ?? [])
-            ->flatMap(fn (array $widget): array => array_keys($widget['permissions'] ?? []))
-            ->all();
+        Artisan::call('shield:generate', [
+            '--all' => true,
+            '--panel' => 'erp',
+            '--option' => 'permissions',
+            '--no-interaction' => true,
+        ]);
 
-        $permissions = collect($names)->map(
-            fn (string $name): Permission => Permission::findOrCreate($name, 'web')
-        );
-
-        $role->givePermissionTo($permissions->all());
+        $role->syncPermissions(Permission::query()->where('guard_name', 'web')->get());
     }
 }

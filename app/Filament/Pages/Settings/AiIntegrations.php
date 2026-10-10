@@ -31,9 +31,9 @@ class AiIntegrations extends Page
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCpuChip;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Settings';
+    protected static string|UnitEnum|null $navigationGroup = 'My Account';
 
-    protected static ?int $navigationSort = 63;
+    protected static ?int $navigationSort = 3;
 
     protected static ?string $slug = 'settings/ai-integrations';
 
