@@ -1,4 +1,4 @@
-# AUTOPILOT MODE — unattended overnight run
+# AUTOPILOT MODE — unattended run (interactive, in tmux, driven by /goal)
 
 You are running **unattended**. Nobody is watching and nobody can answer questions until morning.
 These rules OVERRIDE any instruction in IMPLEMENTATION_SPEC.md that says "ask", "wait for approval",
@@ -42,14 +42,27 @@ or "stop and ask the product owner".
 - If a tool or service is genuinely unavailable (e.g. no Docker), work around it and note it in the report.
   Do not loop forever on the same error. After 3 failed approaches, write it down and move on.
 
-## 4. Working rhythm
-- Read `IMPLEMENTATION_SPEC.md`, `docs/ARCHITECTURE_NOTES.md`, `docs/DECISIONS.md` and `.autopilot/PROGRESS.md` at the start
-  of every phase, because each phase is a fresh session with no memory.
+- Do not kill or control the tmux session you run in, and do not send keystrokes to it. Do not start other
+  `claude` processes (no nested `claude -p`). Use your own subagents instead.
+
+## 4. Working rhythm (one long interactive session driven by /goal)
+- You run in ONE interactive Claude Code session inside tmux, driven by `/goal`. The goal is re-checked after every turn,
+  and a watchdog may re-send the same `/goal` if the session goes idle. When the goal arrives again, do NOT start over:
+  re-read `.autopilot/PROGRESS.md` and `git log --oneline -30`, then continue exactly where the work stopped.
+- Your context will be compacted many times. After each compaction, re-read this file, `.autopilot/PROGRESS.md`,
+  `docs/ARCHITECTURE_NOTES.md` and `docs/DECISIONS.md` before continuing. PROGRESS.md is your memory: keep it accurate.
+- **Earlier headless run:** `.autopilot/state*/` folders and "checkpoint after phase N" commits from an older script are
+  NOT evidence of work (they only contain empty marker files). Only phase 0 was really finished, and phase 1 was partly built
+  (central Authorizer, scope policies, admin users with roles + scopes). Verify the real state from code and tests first.
+- PROGRESS.md format: one row per phase (0, 1, 1S, 2, 3, 4, 5, 5M, 6, 7, review, report) with status
+  (todo / in progress / done), date, test counts from verify.sh, and notes. Mark a phase done ONLY after verify.sh passes
+  with that phase's tests included.
 - Commit after each meaningful step with conventional commit messages, on the current branch.
-- Keep `.autopilot/PROGRESS.md` updated: what is done, what is in progress, what is left, and known issues.
-- Before declaring a phase done, run `.autopilot/verify.sh` and make it pass.
-- Prefer subagents for independent parallel work (e.g. writing tests while implementing), and a separate
-  reviewer subagent that has not seen your reasoning to check each phase against the spec.
+- End each phase by showing the verify.sh summary in your reply, because the goal checker only sees the conversation.
+- Use subagents for independent parallel work (e.g. writing E2E tests while implementing). For the final review, use a
+  fresh subagent that has not seen your reasoning (see the review priorities in §7).
+- The user may type into the session to watch or steer. Their messages take priority. Answer briefly, then continue the goal.
+- Usage limits are handled by Claude Code (it waits and continues). After a limit, just continue from PROGRESS.md.
 
 ## 5. Verification script (created in Phase 0, maintained after)
 `.autopilot/verify.sh` must be an executable bash script that, from the repo root:
@@ -70,3 +83,18 @@ By the end, these must exist and be accurate:
   - Decisions made, known issues and what is left
 - `README_MCP.md`, `docs/DECISIONS.md`, `docs/ARCHITECTURE_NOTES.md`
 - A demo seed (`seed:demo`) with realistic data, so the app looks alive when opened
+
+## 7. Independent review (after phase 7, before the morning report)
+Start a fresh subagent that did not write the code. Give it `git diff <first autopilot commit>..HEAD` and IMPLEMENTATION_SPEC.md.
+It writes `docs/REVIEW.md` and then fixes every issue (with tests). Priorities:
+1. Security: every MCP tool, API route, page and assistant action enforces authorize() and scope server-side; students never
+   see other students' data or unpublished results; the clearance stage order cannot be bypassed; tokens are hashed; no secrets
+   are committed; revoked sessions and integrations are rejected immediately; MCP is impossible without 2FA; TOTP secrets are
+   encrypted, recovery codes are hashed and single-use; 2FA cannot be bypassed via API, assistant, MCP or "trusted device".
+2. Spec coverage: walk every section and list anything missing or wrong.
+3. Correctness: CGPA math, state machine edge cases, concurrency.
+4. Tests: E2E tests are real UI journeys, not mocked shortcuts.
+
+## 8. Finishing
+When every phase, the review and MORNING_REPORT.md are done, verify.sh passes and git status is clean, create
+`.autopilot/DONE` containing a 5-line summary, and commit it. That file tells the watchdog the work is finished.

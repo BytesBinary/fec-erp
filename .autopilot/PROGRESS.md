@@ -6,7 +6,7 @@ Decisions: `docs/DECISIONS.md` · Verify: `.autopilot/verify.sh`
 ## Phase checklist
 
 - [x] **0** — Discovery, architecture notes, decisions, verify.sh, E2E tooling (2026-10-10)
-- [ ] **1** — RBAC foundation, central authorize(), audit log, service layers, seed:test skeleton
+- [x] **1** — RBAC foundation, central authorize(), audit log, service layers, seed:test skeleton (2026-10-10; verify: Unit 35, Feature 72, Browser 2 — all pass)
 - [ ] **1S** — Account security: sessions/devices, new-device alerts, TOTP 2FA, recovery codes, admin tools (E2E 11, 12, 15)
 - [ ] **2** — Profile gate + Results/CGPA (E2E 1, 2)
 - [ ] **3** — Clearance core (E2E 3 to READY, 4, 5, 6)
