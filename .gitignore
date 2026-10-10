@@ -26,3 +26,6 @@ Thumbs.db
 .autopilot/logs/
 /tests/Browser/Screenshots
 /database/verify.sqlite
+
+# Presentation screenshots (generated locally, see docs/README.md)
+/docs/screenshots

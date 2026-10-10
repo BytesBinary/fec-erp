@@ -95,7 +95,6 @@ return [
             'pending' => 'Pending',
             'rejected' => 'Rejected',
             'skipped' => 'Skipped',
-            'pending' => 'Waiting for result',
             'waiting' => 'Waiting',
         ],
         'ready_message' => 'Your clearance is complete and ready. Visit the Administration Office once, with your student ID, to collect your sealed copy.',
@@ -311,11 +310,12 @@ return [
         'model_label' => 'result pull',
         'plural_model_label' => 'Student results',
         'statuses' => [
-            'queued' => 'Waiting',
+            'queued' => 'Queued',
             'running' => 'Running',
             'success' => 'Success',
             'failed' => 'Failed',
             'skipped' => 'Skipped',
+            'pending' => 'Waiting for result',
         ],
         'changes' => [
             'improved' => 'Improved',

@@ -1,59 +1,35 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# FEC ERP
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A college ERP for Faridpur Engineering College: people, results and CGPA, official result sync from the university portal, clearance with verifiable certificates, halls and library, routines and exams, account security, an AI layer (MCP server and in-app assistant) and a configurable email notification system.
 
-## About Laravel
+Built with **Laravel 12, Filament 5, Livewire 4, Pest 4, Tailwind 4**. Nine roles (super admin, administration office, head of institution, principal, department head, hall provost, librarian, teacher, student) share one authorization layer used by the screens, the 130-tool MCP server and the assistant.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Quick start
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+```bash
+composer install && npm install && npm run build
+cp .env.example .env && php artisan key:generate     # set DB_* (MySQL, database fec_erp)
+php artisan migrate && php artisan db:seed
+composer run dev                                      # server + queue worker + logs + Vite
+```
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Demo data with a login for every role (password `password`; **drops all tables**): `php artisan seed:demo --fresh`, then open `http://127.0.0.1:8000` and sign in as `superadmin@fec.test`, `office@fec.test`, `student.eligible@fec.test`, …
 
-## Learning Laravel
+Result pulls and emails need a queue worker and the scheduler (`php artisan schedule:work`). Real email needs `NOTIFICATION_DRIVER=mail` and the `MAIL_*` settings.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## Documentation
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Start at **[docs/README.md](docs/README.md)**:
 
-## Laravel Sponsors
+- [Complete feature list](docs/FEATURES.md) · [Presentation kit](docs/PRESENTATION.md) · [Workflow diagrams](docs/WORKFLOWS.md)
+- [Install, configure, operate](docs/OPERATIONS.md) · [Roles and permissions](docs/ROLES_AND_PERMISSIONS.md) · [Data model](docs/DATA_MODEL.md)
+- [MCP tool catalog](docs/MCP_TOOLS.md) and [how to connect an AI client](README_MCP.md) · [Email events](docs/EMAIL_EVENTS.md)
+- [Architecture notes](docs/ARCHITECTURE_NOTES.md) · [Design decisions](docs/DECISIONS.md) · [Independent review](docs/REVIEW.md)
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## Tests
 
-### Premium Partners
+```bash
+.autopilot/verify.sh          # build, fresh migrate + seed, Pint, Unit, Feature, MCP and browser tests
+```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
-
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Unit 86 · Feature 495 · MCP 82 · Browser 31, run in CI (`.github/workflows/tests.yml`).
