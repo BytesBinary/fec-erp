@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages\Clearance;
 
+use App\Enums\ClearanceStatus;
 use App\Exceptions\Domain\ConflictException;
 use App\Exceptions\Domain\DomainException;
 use App\Models\ClearanceRequest;
@@ -13,6 +14,7 @@ use App\Services\Halls\HallResidencyService;
 use App\Services\Library\LibraryService;
 use App\Support\Authorization\Authorizer;
 use Filament\Actions\Action;
+use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
@@ -109,6 +111,56 @@ class ViewClearance extends Page
     public function integrity(): array
     {
         return app(HashChain::class)->verify($this->clearance());
+    }
+
+    public function canPrint(): bool
+    {
+        return app(Authorizer::class)->allows($this->user(), 'clearance:print', $this->clearance())
+            && in_array($this->clearance()->status, [ClearanceStatus::ReadyForCollection, ClearanceStatus::Printed, ClearanceStatus::Collected], true);
+    }
+
+    public function printAction(): Action
+    {
+        return Action::make('print')
+            ->label(fn (): string => $this->clearance()->prints()->exists() ? 'Reprint as duplicate' : 'Print')
+            ->icon('heroicon-o-printer')
+            ->visible(fn (): bool => $this->canPrint() && $this->clearance()->status !== ClearanceStatus::Collected)
+            ->action(fn () => $this->printCopy(false));
+    }
+
+    public function printOriginalAction(): Action
+    {
+        return Action::make('printOriginal')
+            ->label('Reprint without DUPLICATE')
+            ->color('gray')
+            ->requiresConfirmation()
+            ->visible(fn (): bool => $this->canPrint() && $this->clearance()->status === ClearanceStatus::Printed && app(Authorizer::class)->isSuperAdmin($this->user()))
+            ->action(fn () => $this->printCopy(true));
+    }
+
+    public function collectAction(): Action
+    {
+        return Action::make('collect')
+            ->label('Mark collected')
+            ->color('success')
+            ->modalHeading('Hand the clearance over?')
+            ->modalDescription('Confirm the Principal signed it, it is sealed and the student showed their ID.')
+            ->schema([Checkbox::make('id_verified')->label('Student ID verified')])
+            ->visible(fn (): bool => $this->clearance()->status === ClearanceStatus::Printed && app(Authorizer::class)->allows($this->user(), 'clearance:mark_collected', $this->clearance()))
+            ->action(fn (array $data) => $this->decide(fn () => app(ClearanceService::class)->markCollected($this->user(), $this->recordId, (bool) ($data['id_verified'] ?? false)), 'Marked as collected.'));
+    }
+
+    protected function printCopy(bool $asOriginal): void
+    {
+        try {
+            $print = app(ClearanceService::class)->recordPrint($this->user(), $this->recordId, 'html', $asOriginal);
+        } catch (DomainException $exception) {
+            Notification::make()->danger()->title($exception->getMessage())->send();
+
+            return;
+        }
+
+        $this->redirect(route('clearance.print', ['clearanceRequest' => $this->recordId, 'print' => $print->getKey()]));
     }
 
     public function approveAction(): Action

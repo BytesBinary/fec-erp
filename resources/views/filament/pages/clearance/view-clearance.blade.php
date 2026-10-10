@@ -15,6 +15,13 @@
         <div class="mt-4 flex flex-wrap gap-3">
             {{ $this->approveAction }}
             {{ $this->rejectAction }}
+            {{ $this->printAction }}
+            {{ $this->printOriginalAction }}
+            {{ $this->collectAction }}
+            @if ($this->canPrint())
+                <x-filament::button tag="a" color="gray" :href="route('clearance.print', $clearance->id)" icon="heroicon-o-eye">Open print view</x-filament::button>
+                <x-filament::button tag="a" color="gray" :href="route('clearance.pdf', $clearance->id)" icon="heroicon-o-document-arrow-down">PDF</x-filament::button>
+            @endif
         </div>
     </x-filament::section>
 
@@ -46,6 +53,21 @@
                     <li>{{ $loan->book_title }} — due {{ $loan->due_on->format('d M Y') }}@if (! $loan->returned_on) <span class="text-danger-600">(not returned)</span>@endif</li>
                 @endforeach
             </ul>
+        </x-filament::section>
+    @endif
+
+    @if ($this->canPrint())
+        <x-filament::section heading="Print history">
+            <ul class="space-y-1 text-sm" data-testid="print-history">
+                @forelse ($clearance->prints()->with('printer')->get() as $print)
+                    <li data-duplicate="{{ $print->is_duplicate ? '1' : '0' }}">{{ $print->printed_at->format('d M Y H:i') }} — {{ $print->printer?->name }}{{ $print->is_duplicate ? ' (DUPLICATE)' : '' }}</li>
+                @empty
+                    <li class="text-gray-500">Not printed yet.</li>
+                @endforelse
+            </ul>
+            @if ($clearance->collected_at)
+                <p class="mt-2 text-sm" data-testid="collected-info">Collected {{ $clearance->collected_at->format('d M Y H:i') }} by {{ $clearance->collector?->name }} — ID {{ $clearance->id_verified ? 'verified' : 'not verified' }}.</p>
+            @endif
         </x-filament::section>
     @endif
 

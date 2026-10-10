@@ -10,6 +10,7 @@ use App\Exceptions\Domain\NotFoundException;
 use App\Exceptions\Domain\ValidationException;
 use App\Models\ClearanceApproval;
 use App\Models\ClearanceEvent;
+use App\Models\ClearancePrint;
 use App\Models\ClearanceRequest;
 use App\Models\ClearanceStage;
 use App\Models\Student;
@@ -237,6 +238,105 @@ class ClearanceService
         }));
 
         $this->audit->record('clearance.cancelled', $result, null, ['reason' => $reason], $actor);
+
+        return $result;
+    }
+
+    /**
+     * Administration-office search (spec §8.6). Filters: `q` (student roll,
+     * name or request number), `department_id`, `session`, `status`
+     * (defaults to ready for collection when omitted, pass `all` for every status).
+     *
+     * @param  array<string, mixed>  $filters
+     * @return Collection<int, ClearanceRequest>
+     */
+    public function search(User $actor, array $filters = [], int $limit = 100): Collection
+    {
+        $this->authorizer->authorize($actor, 'clearance:search');
+
+        $status = $filters['status'] ?? ClearanceStatus::ReadyForCollection->value;
+        $term = trim((string) ($filters['q'] ?? ''));
+
+        $query = ClearanceRequest::query()
+            ->with(['student.user', 'student.department', 'student.batch', 'currentStage'])
+            ->when($status !== 'all', fn (Builder $q) => $q->where('status', $status))
+            ->when($term !== '', fn (Builder $q) => $q->where(function (Builder $inner) use ($term): void {
+                $inner->where('request_no', 'like', "%{$term}%")
+                    ->orWhereHas('student', fn (Builder $student) => $student->where('roll_number', 'like', "%{$term}%")
+                        ->orWhereHas('user', fn (Builder $user) => $user->where('name', 'like', "%{$term}%")));
+            }))
+            ->when(! empty($filters['department_id']), fn (Builder $q) => $q->whereHas('student', fn (Builder $student) => $student->where('department_id', $filters['department_id'])))
+            ->when(! empty($filters['session']), fn (Builder $q) => $q->whereHas('student.batch', fn (Builder $batch) => $batch->where('session', $filters['session'])))
+            ->orderByDesc('ready_at')
+            ->orderByDesc('id')
+            ->limit(max(1, min(100, $limit)));
+
+        return $this->authorizer->scopeFor($actor, 'clearance:search')->constrain($query, [
+            'department' => fn (Builder $q, array $ids) => $q->whereHas('student', fn (Builder $s) => $s->whereIn('department_id', $ids)),
+        ])->get();
+    }
+
+    /**
+     * Prints the clearance: first print moves READY → PRINTED, every print is
+     * logged, and reprints are marked DUPLICATE unless super admin overrides.
+     */
+    public function recordPrint(User $actor, ClearanceRequest|int $request, string $format = 'html', bool $asOriginal = false): ClearancePrint
+    {
+        return $this->audit->as($actor, fn (): ClearancePrint => DB::transaction(function () use ($actor, $request, $format, $asOriginal): ClearancePrint {
+            $fresh = $this->lock($request, null);
+
+            $this->authorizer->authorize($actor, 'clearance:print', $fresh);
+
+            if (! in_array($fresh->status, [ClearanceStatus::ReadyForCollection, ClearanceStatus::Printed], true)) {
+                throw new InvalidStateException(__('erp.clearance.not_ready_to_print'), ['status' => $fresh->status->value]);
+            }
+
+            $alreadyPrinted = $fresh->prints()->exists();
+
+            if ($asOriginal && $alreadyPrinted) {
+                app(ClearancePrintService::class)->assertMayOverrideDuplicate($actor);
+            }
+
+            $print = ClearancePrint::query()->create([
+                'clearance_request_id' => $fresh->getKey(),
+                'printed_by' => $actor->getKey(),
+                'printed_at' => now(),
+                'is_duplicate' => $alreadyPrinted && ! $asOriginal,
+                'format' => $format,
+            ]);
+
+            $this->transition($fresh, ClearanceStatus::Printed, $actor, $fresh->printed_at === null ? ['printed_at' => now()] : [], null, $alreadyPrinted ? 'Reprinted'.($asOriginal ? ' (original, super admin)' : ' (duplicate)') : 'Printed');
+
+            $this->audit->record($alreadyPrinted ? 'clearance.reprinted' : 'clearance.printed', $fresh, null, ['print_id' => $print->getKey(), 'duplicate' => $print->is_duplicate], $actor);
+
+            return $print;
+        }));
+    }
+
+    /**
+     * Hand-over: the copy was printed, signed by the Principal, sealed and given
+     * to the student.
+     */
+    public function markCollected(User $actor, ClearanceRequest|int $request, bool $idVerified): ClearanceRequest
+    {
+        $result = $this->audit->as($actor, fn (): ClearanceRequest => DB::transaction(function () use ($actor, $request, $idVerified): ClearanceRequest {
+            $fresh = $this->lock($request, null);
+
+            $this->authorizer->authorize($actor, 'clearance:mark_collected', $fresh);
+
+            if ($fresh->status !== ClearanceStatus::Printed) {
+                throw new InvalidStateException(__('erp.clearance.collect_needs_print'), ['status' => $fresh->status->value]);
+            }
+
+            return $this->transition($fresh, ClearanceStatus::Collected, $actor, [
+                'collected_at' => now(),
+                'collected_by' => $actor->getKey(),
+                'id_verified' => $idVerified,
+            ], null, $idVerified ? 'Handed over, student ID verified' : 'Handed over, student ID NOT verified');
+        }));
+
+        $this->audit->record('clearance.collected', $result, null, ['id_verified' => $idVerified], $actor);
+        $this->notifier->collected($result->load('student.user'));
 
         return $result;
     }
