@@ -15,6 +15,8 @@ Decisions: `docs/DECISIONS.md` · Verify: `.autopilot/verify.sh`
 - [x] **5M** — MCP access management (E2E 13, 14) (2026-10-10; verify: Unit 86, Feature 310, Mcp 82, Browser 19 — all pass)
 - [x] **6** — AI assistant + feature index (E2E 9) (2026-10-10; verify: Unit 86, Feature 348, Mcp 82, Browser 22 — all pass)
 - [x] **7** — Hardening, reminders, a11y, seed:demo, CI workflow, docs (2026-10-10; verify: Unit 86, Feature 363, Mcp 82, Browser 26 — all pass)
+- [x] **Review** — two independent fresh-agent reviews (security; spec coverage), docs/REVIEW.md, fixes with tests (2026-10-10)
+- [x] **Report** — MORNING_REPORT.md (2026-10-10)
 
 ## Phase 0 — done
 
