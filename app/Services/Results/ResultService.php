@@ -163,14 +163,22 @@ class ResultService
     {
         $this->authorizeOffering($actor, 'result:submit', $offering);
 
-        return $this->transition($actor, $offering, ResultStatus::Draft, ResultStatus::Submitted, requireAll: true);
+        $count = $this->transition($actor, $offering, ResultStatus::Draft, ResultStatus::Submitted, requireAll: true);
+
+        app(\App\Services\Notifications\NotificationEvents::class)->emit('result.submitted', ['course' => $offering->course->code.' '.$offering->course->name, 'count' => $count, 'link' => url('/result-entry')], 'result_submit:'.$offering->getKey().':'.now()->format('YmdH'), null, $offering->course->department_id);
+
+        return $count;
     }
 
     public function approveOffering(User $actor, CourseOffering $offering): int
     {
         $this->authorizeOffering($actor, 'result:approve', $offering);
 
-        return $this->transition($actor, $offering, ResultStatus::Submitted, ResultStatus::Approved);
+        $count = $this->transition($actor, $offering, ResultStatus::Submitted, ResultStatus::Approved);
+
+        app(\App\Services\Notifications\NotificationEvents::class)->emit('result.approved', ['course' => $offering->course->code.' '.$offering->course->name, 'link' => url('/results/publish')], 'result_approve:'.$offering->getKey().':'.now()->format('YmdH'));
+
+        return $count;
     }
 
     /**
@@ -203,8 +211,15 @@ class ResultService
         return $this->audit->as($actor, fn (): int => DB::transaction(function () use ($actor, $semester): int {
             $ids = $this->approvedInSemester($semester)->pluck('results.id');
 
-            Result::query()->whereIn('id', $ids)->each(function (Result $result) use ($actor): void {
+            $studentIds = [];
+
+            Result::query()->whereIn('id', $ids)->with('enrollment')->each(function (Result $result) use ($actor, &$studentIds): void {
                 $result->update(['status' => ResultStatus::Published, 'published_at' => now(), 'published_by' => $actor->getKey()]);
+                $studentIds[$result->enrollment->student_id] = true;
+            });
+
+            \App\Models\Student::query()->whereIn('id', array_keys($studentIds))->with('user')->each(function (\App\Models\Student $student) use ($semester): void {
+                app(\App\Services\Notifications\NotificationEvents::class)->emit('result.semester_published', ['semester' => $semester->name, 'link' => url('/results')], 'published:'.$semester->getKey().':'.$student->getKey().':'.now()->format('Ymd'), $student->user, $student->department_id);
             });
 
             return $ids->count();

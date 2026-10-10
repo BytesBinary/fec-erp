@@ -12,7 +12,13 @@ class ClearanceNotification extends InAppNotification
         protected string $message,
         protected ?string $link = null,
         protected string $tone = 'info',
+        protected ?string $event = null,
     ) {}
+
+    public function eventKey(): ?string
+    {
+        return $this->event;
+    }
 
     public function title(): string
     {

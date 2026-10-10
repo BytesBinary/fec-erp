@@ -25,6 +25,8 @@ class ClearanceNotifier
             $resubmitted ? __('erp.clearance.notify.resubmitted_title') : __('erp.clearance.notify.submitted_title'),
             __('erp.clearance.notify.submitted_body', ['no' => $request->request_no]),
             MyClearance::getUrl(),
+            'info',
+            $resubmitted ? 'clearance.resubmitted' : 'clearance.submitted',
         ));
 
         $this->notifyCurrentApprovers($request);
@@ -43,6 +45,7 @@ class ClearanceNotifier
             __('erp.clearance.notify.waiting_body', ['no' => $request->request_no, 'student' => $request->student->user?->name, 'stage' => $stage->label]),
             PendingApprovals::getUrl(),
             'warning',
+            'clearance.waiting',
         )));
     }
 
@@ -52,7 +55,7 @@ class ClearanceNotifier
             __('erp.clearance.notify.approved_title', ['stage' => $stage->label]),
             __('erp.clearance.notify.approved_body', ['no' => $request->request_no, 'stage' => $stage->label]),
             MyClearance::getUrl(),
-            'success',
+            'success', 'clearance.approved'
         ));
 
         $this->notifyCurrentApprovers($request);
@@ -64,7 +67,7 @@ class ClearanceNotifier
             __('erp.clearance.notify.rejected_title', ['stage' => $stage->label]),
             __('erp.clearance.notify.rejected_body', ['no' => $request->request_no, 'reason' => $reason]),
             MyClearance::getUrl(),
-            'danger',
+            'danger', 'clearance.rejected'
         ));
     }
 
@@ -74,7 +77,7 @@ class ClearanceNotifier
             __('erp.clearance.notify.ready_title'),
             __('erp.clearance.ready_message'),
             MyClearance::getUrl(),
-            'success',
+            'success', 'clearance.ready_for_collection'
         ));
     }
 
@@ -84,7 +87,7 @@ class ClearanceNotifier
             __('erp.clearance.notify.collected_title'),
             __('erp.clearance.notify.collected_body', ['no' => $request->request_no]),
             MyClearance::getUrl(),
-            'success',
+            'success', 'clearance.collected'
         ));
     }
 }

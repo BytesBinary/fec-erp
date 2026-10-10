@@ -115,6 +115,7 @@ class ProfileService
 
         if ($complete && $profile->profile_completed_at === null) {
             $profile->forceFill(['profile_completed_at' => now()])->save();
+            app(\App\Services\Notifications\NotificationEvents::class)->emit('profile.completed', ['link' => url('/')], 'profile_done:'.$student->getKey().':'.now()->format('Ymd'), $student->user);
         } elseif (! $complete && $profile->profile_completed_at !== null) {
             $profile->forceFill(['profile_completed_at' => null])->save();
         }
@@ -130,6 +131,8 @@ class ProfileService
     {
         $profile = StudentProfile::query()->firstOrCreate(['student_id' => $student->getKey()]);
         $profile->forceFill(['locked_fields' => config('profile.locked_after_clearance')])->save();
+
+        app(\App\Services\Notifications\NotificationEvents::class)->emit('profile.locked_after_clearance', ['link' => url('/profile/complete')], 'profile_lock:'.$student->getKey(), $student->user);
     }
 
     /**
@@ -155,6 +158,12 @@ class ProfileService
 
         $this->audit->as($actor, fn () => \App\Models\ProfileRequiredField::query()->updateOrCreate(['field_key' => $fieldKey], ['required' => $required, 'active' => $active]));
         $this->checker->forgetCache();
+
+        if ($required && $active) {
+            Student::query()->whereHas('profile', fn ($query) => $query->whereNotNull('profile_completed_at'))->with('user')->each(
+                fn (Student $student) => app(\App\Services\Notifications\NotificationEvents::class)->emit('profile.required_fields_changed', ['field' => (string) config("profile.fields.{$fieldKey}.label", $fieldKey), 'link' => url('/profile/complete')], 'field:'.$fieldKey.':'.$student->getKey().':'.now()->format('Ymd'), $student->user),
+            );
+        }
     }
 
     /**

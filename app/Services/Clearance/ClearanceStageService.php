@@ -39,6 +39,7 @@ class ClearanceStageService
         $stage = ClearanceStage::query()->find($id) ?? throw new NotFoundException(__('erp.errors.not_found', ['entity' => 'clearance stage']));
 
         $this->audit->as($actor, fn () => $stage->update([$field => ! $stage->{$field}]));
+        app(\App\Services\Notifications\NotificationEvents::class)->emit('clearance.stage_config_changed', ['summary' => "Stage \"{$stage->label}\": {$field} is now ".($stage->{$field} ? 'on' : 'off'), 'actor' => $actor->name], null);
 
         return $stage;
     }

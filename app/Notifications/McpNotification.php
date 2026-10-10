@@ -11,7 +11,13 @@ class McpNotification extends InAppNotification
         protected string $heading,
         protected string $message,
         protected string $tone = 'info',
+        protected ?string $event = null,
     ) {}
+
+    public function eventKey(): ?string
+    {
+        return $this->event;
+    }
 
     public function title(): string
     {

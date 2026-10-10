@@ -11,6 +11,19 @@ class PasswordChanged extends InAppNotification
 {
     public function __construct(public int $signedOutDevices) {}
 
+    public function eventKey(): ?string
+    {
+        return 'security.password_changed';
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function emailContext(): array
+    {
+        return ['signed_out_devices' => $this->signedOutDevices, 'link' => $this->url()];
+    }
+
     public function title(): string
     {
         return __('erp.security.password_changed_title');

@@ -65,7 +65,7 @@ class TestSeeder extends Seeder
     public function run(): void
     {
         // Seeded students are fixtures, not people to look up on the exam portal.
-        config(['result_portal.enabled' => false]);
+        config(['result_portal.enabled' => false, 'notifications.enabled' => false]);
 
         app(AuditLogger::class)->withoutAuditing(function (): void {
             $this->seedBase();

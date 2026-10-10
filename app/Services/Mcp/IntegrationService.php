@@ -84,7 +84,7 @@ class IntegrationService
         }));
 
         $this->audit->record('mcp.integration_created', $integration, null, ['name' => $name, 'client' => $clientType, 'access' => $accessLevel], $user);
-        $user->notify(new McpNotification(__('erp.mcp.created_title'), __('erp.mcp.created_body', ['name' => $name]), 'info'));
+        $user->notify(new McpNotification(__('erp.mcp.created_title'), __('erp.mcp.created_body', ['name' => $name]), 'info', 'mcp.integration_created'));
 
         return ['integration' => $integration, 'token' => $plain];
     }
@@ -183,6 +183,7 @@ class IntegrationService
             __('erp.mcp.revoked_title'),
             $byAdmin ? __('erp.mcp.revoked_by_admin_body', ['name' => $integration->name, 'reason' => $reason]) : __('erp.mcp.revoked_body', ['name' => $integration->name]),
             $byAdmin ? 'danger' : 'info',
+            'mcp.integration_revoked',
         ));
 
         return $integration;
@@ -204,7 +205,7 @@ class IntegrationService
         });
 
         if ($count > 0) {
-            $user->notify(new McpNotification(__('erp.mcp.revoked_title'), __('erp.mcp.stopped_all_body', ['count' => $count, 'reason' => $reason]), 'warning'));
+            $user->notify(new McpNotification(__('erp.mcp.revoked_title'), __('erp.mcp.stopped_all_body', ['count' => $count, 'reason' => $reason]), 'warning', 'mcp.integration_stopped_all'));
         }
 
         return $count;
@@ -316,7 +317,7 @@ class IntegrationService
             ->whereNull('expiry_notified_at')
             ->with('user')
             ->each(function (McpIntegration $integration) use (&$count): void {
-                $integration->user->notify(new McpNotification(__('erp.mcp.expiring_title'), __('erp.mcp.expiring_body', ['name' => $integration->name, 'date' => $integration->expires_at->format('d M Y')]), 'warning'));
+                $integration->user->notify(new McpNotification(__('erp.mcp.expiring_title'), __('erp.mcp.expiring_body', ['name' => $integration->name, 'date' => $integration->expires_at->format('d M Y')]), 'warning', 'mcp.integration_expiring'));
                 $integration->forceFill(['expiry_notified_at' => now()])->save();
                 $count++;
             });
@@ -367,7 +368,7 @@ class IntegrationService
         $newIp = $ip !== null && ! in_array($ip, $known, true);
 
         if ($newIp && ! $first) {
-            $integration->user->notify(new McpNotification(__('erp.mcp.new_ip_title'), __('erp.mcp.new_ip_body', ['name' => $integration->name, 'ip' => $ip]), 'warning'));
+            $integration->user->notify(new McpNotification(__('erp.mcp.new_ip_title'), __('erp.mcp.new_ip_body', ['name' => $integration->name, 'ip' => $ip]), 'warning', 'mcp.new_ip'));
         }
 
         $integration->forceFill([

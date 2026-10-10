@@ -81,5 +81,7 @@ class GradingScaleService
         }
 
         $this->forget();
+
+        app(\App\Services\Notifications\NotificationEvents::class)->emit('grading_scale.changed', ['actor' => $actor->name, 'link' => url('/settings/grading-scale')], null);
     }
 }

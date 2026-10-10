@@ -131,6 +131,11 @@ return [
 
             'audit_log:view' => 'View the audit log',
 
+            'notification_rule:view' => 'See the email event rules and previews',
+            'notification_rule:manage' => 'Enable, disable and configure email events, send test emails',
+            'email_template:manage' => 'Create and edit email templates',
+            'email_delivery:view' => 'See the email delivery history',
+            'email_delivery:retry' => 'Retry failed emails',
             'portal_monitor:view' => 'See the result portal monitor (exam list, daily check, publications)',
             'portal_monitor:manage' => 'Sync the exam list, run the daily check and start publication pulls',
             'result_pull:list' => 'See which students\' official results were pulled (success / failed)',
@@ -182,7 +187,7 @@ return [
          */
         'matrix' => [
             'admin_office' => [
-                'result_pull:list', 'result_pull:retry', 'portal_monitor:view', 'portal_monitor:manage',
+                'result_pull:list', 'result_pull:retry', 'portal_monitor:view', 'portal_monitor:manage', 'notification_rule:view', 'email_delivery:view', 'email_delivery:retry',
                 'department:list', 'department:view', 'program:list', 'program:view',
                 'semester:list', 'semester:view', 'course:list', 'course:view',
                 'batch:list', 'batch:view', 'student:list', 'student:view',

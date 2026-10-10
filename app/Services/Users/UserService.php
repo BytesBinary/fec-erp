@@ -44,6 +44,15 @@ class UserService extends CrudService
         return ['is_active'];
     }
 
+    protected function performCreate(User $actor, array $data): Model
+    {
+        $user = parent::performCreate($actor, $data);
+
+        app(\App\Services\Notifications\NotificationEvents::class)->emit('user.account_created', ['role' => 'see your administrator', 'link' => url('/')], 'account_created:'.$user->getKey(), $user);
+
+        return $user;
+    }
+
     protected function performUpdate(User $actor, Model $model, array $data): Model
     {
         if (blank($data['password'] ?? null)) {
@@ -96,6 +105,8 @@ class UserService extends CrudService
         }
 
         $this->write($actor, fn () => $user->update(['is_active' => $active]));
+
+        app(\App\Services\Notifications\NotificationEvents::class)->emit($active ? 'security.account_reactivated' : 'security.account_deactivated', ['link' => url('/')], null, $user);
 
         return $user->refresh();
     }

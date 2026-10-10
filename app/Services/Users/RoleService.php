@@ -79,6 +79,8 @@ class RoleService
 
             $this->syncScopes($user, $role, $scopeType, $scopeIds);
 
+            $this->announce($user);
+
             return $user->refresh()->load(['roles', 'roleScopes']);
         }));
     }
@@ -98,8 +100,24 @@ class RoleService
             $this->syncScopes($user, $role, ScopeType::Global, []);
             $user->removeRole($role);
 
+            $this->announce($user);
+
             return $user->refresh()->load(['roles', 'roleScopes']);
         }));
+    }
+
+    /**
+     * Tells the user their access changed (role names and scope names only).
+     */
+    protected function announce(User $user): void
+    {
+        $user->load(['roles', 'roleScopes']);
+
+        app(\App\Services\Notifications\NotificationEvents::class)->emit('security.role_changed', [
+            'roles' => $user->roles->pluck('name')->map(fn (string $name): string => str_replace('_', ' ', $name))->implode(', ') ?: 'none',
+            'scopes' => $user->roleScopes->map(fn ($scope): string => $scope->scope_type->value.' #'.$scope->scope_id)->implode(', ') ?: 'whole institution',
+            'link' => url('/'),
+        ], null, $user);
     }
 
     protected function findRole(string $roleName): Role

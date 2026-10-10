@@ -17,4 +17,9 @@ class LogMessenger implements ExternalMessenger
             'url' => $url,
         ]);
     }
+
+    public function sendToAddress(string $email, string $subject, string $body, ?string $url = null): void
+    {
+        Log::info('external-notification', ['email' => $email, 'subject' => $subject, 'body' => $body, 'url' => $url]);
+    }
 }

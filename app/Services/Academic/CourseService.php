@@ -137,6 +137,10 @@ class CourseService extends CrudService
 
             if ($before !== $after) {
                 $this->audit->record('course.teachers_assigned', $course, ['teacher_ids' => $before], ['teacher_ids' => $after]);
+
+                Teacher::query()->whereKey(array_diff($after, $before))->with('user')->each(
+                    fn (Teacher $teacher) => app(\App\Services\Notifications\NotificationEvents::class)->emit('course.teachers_assigned', ['course' => $course->code.' '.$course->name], 'teach:'.$course->getKey().':'.$teacher->getKey(), $teacher->user),
+                );
             }
 
             return $course->load('teachers');

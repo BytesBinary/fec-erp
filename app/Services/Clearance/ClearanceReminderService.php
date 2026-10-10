@@ -47,6 +47,7 @@ class ClearanceReminderService
                     __('erp.clearance.remind.body', ['student' => $request->student->user->name, 'no' => $request->request_no, 'stage' => $stage->label, 'days' => $days]),
                     PendingApprovals::getUrl(),
                     'warning',
+                    'clearance.reminder',
                 )));
 
                 if ($days >= $escalateAfter) {
@@ -55,6 +56,7 @@ class ClearanceReminderService
                         __('erp.clearance.remind.escalation_body', ['student' => $request->student->user->name, 'no' => $request->request_no, 'stage' => $stage->label, 'days' => $days]),
                         null,
                         'danger',
+                        'clearance.escalation',
                     )));
                     $escalated++;
                 }
@@ -84,6 +86,7 @@ class ClearanceReminderService
             __('erp.clearance.remind.digest_body', ['count' => $ready]),
             ClearanceDesk::getUrl(),
             'info',
+            'clearance.ready_digest',
         )));
 
         return $office->count();

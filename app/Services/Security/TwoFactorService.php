@@ -123,6 +123,7 @@ class TwoFactorService
             $state->forceFill(['enabled_at' => now(), 'last_used_step' => $step, 'failed_attempts' => 0, 'locked_until' => null])->save();
 
             $this->audit->record('two_factor.enabled', $user, null, null, $user);
+            app(\App\Services\Notifications\NotificationEvents::class)->emit('security.two_factor_enabled', ['time' => now()->format('d M Y H:i'), 'link' => \App\Filament\Pages\Security\TwoFactorSettings::getUrl()], 'tf_enabled:'.$user->getKey().':'.$step, $user);
 
             return $this->recoveryCodes->generate($user);
         });
@@ -150,6 +151,7 @@ class TwoFactorService
             if ($this->recoveryCodes->consume($user, $input)) {
                 $this->clearFailures($state);
                 $this->audit->record('two_factor.recovery_code_used', $user, null, null, $user);
+                app(\App\Services\Notifications\NotificationEvents::class)->emit('security.recovery_code_used', ['time' => now()->format('d M Y H:i'), 'codes_left' => $this->recoveryCodes->remaining($user), 'link' => \App\Filament\Pages\Security\TwoFactorSettings::getUrl()], null, $user);
 
                 return TwoFactorResult::RecoveryCodeUsed;
             }
@@ -190,6 +192,7 @@ class TwoFactorService
         }
 
         $this->deactivate($user, 'two_factor.disabled', $user);
+        app(\App\Services\Notifications\NotificationEvents::class)->emit('security.two_factor_disabled', ['time' => now()->format('d M Y H:i'), 'link' => \App\Filament\Pages\Security\TwoFactorSettings::getUrl()], null, $user);
     }
 
     /**
@@ -223,6 +226,7 @@ class TwoFactorService
 
         $codes = $this->recoveryCodes->generate($user);
         $this->audit->record('two_factor.recovery_codes_regenerated', $user, null, null, $user);
+        app(\App\Services\Notifications\NotificationEvents::class)->emit('security.recovery_codes_regenerated', ['time' => now()->format('d M Y H:i'), 'link' => \App\Filament\Pages\Security\TwoFactorSettings::getUrl()], null, $user);
 
         return $codes;
     }

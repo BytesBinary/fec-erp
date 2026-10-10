@@ -12,4 +12,10 @@ use App\Models\User;
 interface ExternalMessenger
 {
     public function send(User $recipient, string $subject, string $body, ?string $url = null): void;
+
+    /**
+     * Sends to a plain address (used by the email pipeline and for addresses
+     * that do not belong to a user, e.g. the old address after an email change).
+     */
+    public function sendToAddress(string $email, string $subject, string $body, ?string $url = null): void;
 }

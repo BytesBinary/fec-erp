@@ -32,5 +32,6 @@ class MfaPolicy
         MfaRolePolicy::query()->updateOrCreate(['role_id' => $role->getKey()], ['required' => $required]);
 
         $this->audit->record('two_factor.policy_changed', $role, null, ['role' => $role->name, 'required' => $required]);
+        app(\App\Services\Notifications\NotificationEvents::class)->emit('security.two_factor_policy_changed', ['summary' => 'Two-factor is now '.($required ? 'required' : 'optional').' for role '.$role->name, 'actor' => (string) (\Illuminate\Support\Facades\Auth::user()?->name ?? 'System'), 'link' => url('/security/two-factor-policy')], null);
     }
 }

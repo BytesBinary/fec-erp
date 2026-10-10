@@ -39,6 +39,7 @@ class UserSecurityService
 
         $this->sessions->revoke($session, $actor, $reason);
         $this->audit->record('session.revoked_by_admin', $session->user, null, ['session_id' => $session->getKey(), 'reason' => $reason], $actor);
+        app(\App\Services\Notifications\NotificationEvents::class)->emit('security.sessions_revoked_by_admin', ['count' => 1, 'reason' => $reason, 'link' => url('/')], null, $session->user);
     }
 
     public function revokeAllSessions(User $actor, User $user, string $reason): int
@@ -48,6 +49,10 @@ class UserSecurityService
 
         $count = $this->sessions->revokeAll($user, $actor, $reason);
         $this->audit->record('session.revoked_all_by_admin', $user, null, ['count' => $count, 'reason' => $reason], $actor);
+
+        if ($count > 0) {
+            app(\App\Services\Notifications\NotificationEvents::class)->emit('security.sessions_revoked_by_admin', ['count' => $count, 'reason' => $reason, 'link' => url('/')], null, $user);
+        }
 
         return $count;
     }

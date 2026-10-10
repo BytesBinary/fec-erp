@@ -25,6 +25,25 @@ abstract class InAppNotification extends Notification
         return null;
     }
 
+    /**
+     * The email event this notification belongs to (config/notification_events.php),
+     * or null to keep it in-app only.
+     */
+    public function eventKey(): ?string
+    {
+        return null;
+    }
+
+    /**
+     * Placeholder values for the email template. Defaults to the bell text.
+     *
+     * @return array<string, mixed>
+     */
+    public function emailContext(): array
+    {
+        return ['title' => $this->title(), 'body' => $this->body(), 'link' => $this->url()];
+    }
+
     public function actionLabel(): string
     {
         return __('erp.notifications.open');

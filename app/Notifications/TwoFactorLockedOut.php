@@ -8,6 +8,19 @@ class TwoFactorLockedOut extends InAppNotification
 {
     public function __construct(public int $minutes) {}
 
+    public function eventKey(): ?string
+    {
+        return 'security.two_factor_locked_out';
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function emailContext(): array
+    {
+        return ['minutes' => $this->minutes, 'link' => $this->url()];
+    }
+
     public function title(): string
     {
         return __('erp.security.locked_out_title');

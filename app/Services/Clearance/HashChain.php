@@ -47,7 +47,26 @@ class HashChain
      *
      * @return array{intact: bool, broken_at: ?int, checked: int}
      */
+    /**
+     * Verifies the chain; a break is reported to the super admins once a day.
+     *
+     * @return array{intact: bool, broken_at: int|null, checked: int}
+     */
     public function verify(ClearanceRequest $request): array
+    {
+        $report = $this->check($request);
+
+        if (! $report['intact']) {
+            app(\App\Services\Notifications\NotificationEvents::class)->emit('clearance.integrity_failed', ['request_no' => $request->request_no, 'position' => $report['broken_at'] ?? 'chain end', 'link' => url('/clearance/requests/'.$request->getKey())], 'integrity:'.$request->getKey().':'.now()->format('Ymd'));
+        }
+
+        return $report;
+    }
+
+    /**
+     * @return array{intact: bool, broken_at: int|null, checked: int}
+     */
+    protected function check(ClearanceRequest $request): array
     {
         $previous = $this->genesis($request);
         $checked = 0;

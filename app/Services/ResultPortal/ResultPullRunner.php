@@ -62,7 +62,7 @@ class ResultPullRunner
             'finished_at' => now(),
         ]);
 
-        if ($imported['found'] > 0) {
+        if ($imported['changed'] > 0) {
             event(new StudentResultPulled($pull->fresh()));
         }
 

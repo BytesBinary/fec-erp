@@ -29,6 +29,8 @@ class RoutineGeneratorService
             'skipped' => count($result['skipped']),
         ]);
 
+        app(\App\Services\Notifications\NotificationEvents::class)->emit('routine.generated', ['semester' => 'semester '.$batch->current_semester.' of batch '.$batch->batch_number, 'link' => url('/routine')], 'routine:'.$batch->getKey().':'.now()->format('YmdHi'), null, $batch->department_id);
+
         return $result;
     }
 

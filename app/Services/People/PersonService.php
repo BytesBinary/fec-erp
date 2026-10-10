@@ -64,6 +64,10 @@ abstract class PersonService extends CrudService
             'user_id' => $user->id,
         ]);
 
+        if ($this->defaultRole() !== RoleKey::Student) {
+            app(\App\Services\Notifications\NotificationEvents::class)->emit('user.account_created', ['role' => str_replace('_', ' ', (string) $this->defaultRole()?->value) ?: 'staff', 'link' => url('/')], 'account_created:'.$user->getKey(), $user);
+        }
+
         return $profile->load('user');
     }
 

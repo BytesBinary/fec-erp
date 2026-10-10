@@ -246,6 +246,7 @@ class ClearanceService
         }));
 
         $this->audit->record('clearance.cancelled', $result, null, ['reason' => $reason], $actor);
+        app(\App\Services\Notifications\NotificationEvents::class)->emit('clearance.cancelled', ['request_no' => $result->request_no, 'reason' => $reason ?? 'Cancelled by the student', 'link' => \App\Filament\Pages\Clearance\MyClearance::getUrl()], 'clr_cancel:'.$result->getKey(), $result->student->user, $result->student->department_id);
 
         return $result;
     }
@@ -316,6 +317,7 @@ class ClearanceService
             $this->transition($fresh, ClearanceStatus::Printed, $actor, $fresh->printed_at === null ? ['printed_at' => now()] : [], null, $alreadyPrinted ? 'Reprinted'.($asOriginal ? ' (original, super admin)' : ' (duplicate)') : 'Printed');
 
             $this->audit->record($alreadyPrinted ? 'clearance.reprinted' : 'clearance.printed', $fresh, null, ['print_id' => $print->getKey(), 'duplicate' => $print->is_duplicate], $actor);
+            app(\App\Services\Notifications\NotificationEvents::class)->emit('clearance.printed', ['request_no' => $fresh->request_no, 'kind' => $print->is_duplicate ? 'duplicate' : 'original', 'link' => \App\Filament\Pages\Clearance\ClearanceDesk::getUrl()], 'clr_print:'.$print->getKey());
 
             return $print;
         }));

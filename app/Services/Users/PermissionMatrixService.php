@@ -90,6 +90,8 @@ class PermissionMatrixService
             }
         }));
 
+        app(\App\Services\Notifications\NotificationEvents::class)->emit('rbac.permission_matrix_updated', ['summary' => $role->name.': +'.count($grant).' / -'.count($revoke).' permission(s)', 'actor' => $actor->name, 'link' => url('/shield/roles')], null);
+
         return $this->specNames($role->refresh()->permissions->pluck('name')->all());
     }
 
