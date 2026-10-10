@@ -131,6 +131,15 @@ return [
 
             'audit_log:view' => 'View the audit log',
 
+            'profile:update_own' => 'Complete and update own student profile',
+            'profile:view' => 'View student profiles',
+            'profile:update' => 'Edit student profiles (including locked fields)',
+            'profile_field:manage' => 'Configure the required profile fields',
+            'grading_scale:manage' => 'Edit the grading scale',
+            'course_offering:list' => 'List course offerings',
+            'course_offering:create' => 'Create course offerings',
+            'course_offering:update' => 'Update course offerings',
+
             'session:view_any' => 'View any user\'s login sessions',
             'session:revoke' => 'Revoke any user\'s login sessions',
             'two_factor:reset' => 'Reset a user\'s two-factor authentication',
@@ -172,6 +181,8 @@ return [
                 'teacher:list', 'teacher:view', 'user:list', 'user:view',
                 'hall:list', 'hall:view', 'result:view', 'transcript:view', 'enrollment:list',
                 'clearance:view', 'clearance:search', 'clearance:print', 'clearance:mark_collected',
+                'enrollment:create', 'enrollment:bulk_create', 'enrollment:drop', 'profile:view', 'profile:update',
+                'course_offering:list', 'course_offering:create',
                 'notice:list', 'notice:view',
             ],
             'head_of_institution' => [
@@ -194,6 +205,7 @@ return [
                 'course:list', 'course:view', 'course:create', 'course:update', 'course:assign_teacher',
                 'student:list', 'student:view', 'teacher:list', 'teacher:view',
                 'enrollment:list', 'result:view', 'result:approve',
+                'course_offering:list', 'course_offering:create', 'profile:view',
                 'clearance:view', 'clearance:approve', 'clearance:reject',
                 'notice:list', 'notice:view', 'notice:create', 'notice:update',
             ],
@@ -212,13 +224,13 @@ return [
             'teacher' => [
                 'department:list', 'department:view', 'program:list', 'program:view',
                 'semester:list', 'semester:view', 'course:list', 'course:view',
-                'enrollment:list', 'result:view', 'result:enter_marks', 'result:submit',
+                'enrollment:list', 'result:view', 'result:enter_marks', 'result:submit', 'course_offering:list',
                 'notice:list', 'notice:view',
             ],
             'student' => [
                 'program:list', 'program:view', 'semester:list', 'semester:view',
                 'course:list', 'course:view', 'student:view',
-                'enrollment:list', 'result:view', 'transcript:view',
+                'enrollment:list', 'result:view', 'transcript:view', 'profile:update_own',
                 'clearance:apply', 'clearance:view', 'clearance:cancel',
                 'notice:list', 'notice:view',
             ],

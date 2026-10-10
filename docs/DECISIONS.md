@@ -155,3 +155,7 @@ Autopilot run: decisions are made without waiting for the product owner (see
 - **Decision:** `BrowserTestCase` prepends `Tests\Support\ResetRequestState` and uses file sessions, because
   the Pest browser plugin serves all requests from one process and would otherwise leak the authenticated
   user, session attributes and scoped services between browser contexts (needed for the multi-device E2E tests).
+
+## D-017 — Photo upload in browser tests
+- **Decision:** The Pest browser plugin's in-process server drops multipart bodies, so E2E 1 cannot upload a photo through FilePond. The test shows the "Photo is required" message, then stores the file and sets `photo_path` directly and finishes the form through the UI. Photo handling is unit-tested at the service level.
+- **Change:** If the plugin gains file support, replace the direct DB update with `attach()`.

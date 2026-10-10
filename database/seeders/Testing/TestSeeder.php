@@ -7,17 +7,22 @@ use App\Enums\DesignationType;
 use App\Enums\RoleKey;
 use App\Models\Batch;
 use App\Models\Course;
+use App\Models\CourseOffering;
 use App\Models\Department;
 use App\Models\Designation;
+use App\Models\Enrollment;
 use App\Models\Hall;
 use App\Models\InstitutionSetting;
 use App\Models\Program;
+use App\Models\Result;
 use App\Models\RoleScope;
 use App\Models\Semester;
 use App\Models\Student;
+use App\Models\StudentProfile;
 use App\Models\Teacher;
 use App\Models\User;
 use App\Services\Audit\AuditLogger;
+use App\Services\Results\GradingScaleService;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Database\Seeder;
@@ -54,7 +59,7 @@ class TestSeeder extends Seeder
     public function run(): void
     {
         app(AuditLogger::class)->withoutAuditing(function (): void {
-            $this->call([PermissionSeeder::class, RoleSeeder::class]);
+            $this->call([PermissionSeeder::class, RoleSeeder::class, \Database\Seeders\GradingScaleSeeder::class, \Database\Seeders\ProfileRequiredFieldSeeder::class]);
 
             InstitutionSetting::query()->updateOrCreate([], [
                 'institution_name' => 'FEC Test Institute',
@@ -66,6 +71,8 @@ class TestSeeder extends Seeder
             $this->seedAcademicStructure();
             $this->seedStaffAccounts();
             $this->seedStudents();
+            $this->seedProfiles();
+            $this->seedAcademicRecords();
         });
     }
 
@@ -197,6 +204,120 @@ class TestSeeder extends Seeder
                 'registration_number' => 'REG-'.$roll,
                 'current_semester' => 8,
             ]);
+        }
+    }
+
+    /**
+     * Complete profiles for every student except the "incomplete" one.
+     */
+    protected function seedProfiles(): void
+    {
+        $residency = [
+            TestDataset::STUDENT_ELIGIBLE => TestDataset::HALL_A,
+            TestDataset::STUDENT_LIBRARY_LOAN => TestDataset::HALL_B,
+            TestDataset::STUDENT_UNFINISHED => TestDataset::HALL_A,
+            TestDataset::STUDENT_NON_RESIDENT => null,
+        ];
+
+        $index = 0;
+
+        foreach ($residency as $email => $hall) {
+            $student = Student::query()->where('user_id', User::query()->where('email', $email)->value('id'))->firstOrFail();
+            $index++;
+
+            $student->update(['phone' => '017000000'.str_pad((string) $index, 2, '0', STR_PAD_LEFT)]);
+
+            StudentProfile::query()->updateOrCreate(['student_id' => $student->id], [
+                'full_name_certificate' => $student->user->name,
+                'father_name' => 'Abdul Karim',
+                'mother_name' => 'Rahima Khatun',
+                'date_of_birth' => '2001-04-12',
+                'email' => $student->user->email,
+                'present_address' => 'House 12, Road 3, Dhaka',
+                'permanent_address' => 'Village Rampur, Bogura',
+                'photo_path' => 'student-photos/test-photo.png',
+                'guardian_name' => 'Abdul Karim',
+                'guardian_phone' => '01800000000',
+                'blood_group' => 'B+',
+                'nid_or_birth_reg' => '19990123456789012',
+                'is_residential' => $hall !== null,
+                'hall_id' => $hall === null ? null : $this->halls[$hall]->id,
+                'emergency_contact_name' => 'Rahima Khatun',
+                'emergency_contact_phone' => '01900000000',
+                'profile_completed_at' => now(),
+                'locked_fields' => null,
+            ]);
+        }
+    }
+
+    /**
+     * Offerings, enrollments and results with hand-calculated GPAs, see
+     * {@see TestDataset::EXPECTED_RESULTS}. The eligible student has a failed
+     * course that is retaken, plus an unpublished improvement attempt.
+     */
+    protected function seedAcademicRecords(): void
+    {
+        $scale = app(GradingScaleService::class);
+
+        $plan = [
+            TestDataset::STUDENT_ELIGIBLE => [
+                ['SP2024', 'CSE-1101', 82, 'regular', 'published'],
+                ['SP2024', 'CSE-1102', 72, 'regular', 'published'],
+                ['FA2024', 'CSE-1201', 68, 'regular', 'published'],
+                ['FA2024', 'CSE-1202', 35, 'regular', 'published'],
+                ['SP2025', 'CSE-1202', 66, 'retake', 'published'],
+                ['SP2025', 'CSE-1203', 90, 'regular', 'published'],
+                ['FA2025', 'CSE-1201', 85, 'improvement', 'approved'],
+            ],
+            TestDataset::STUDENT_UNFINISHED => [
+                ['SP2024', 'CSE-1101', 72, 'regular', 'published'],
+                ['SP2024', 'CSE-1102', 60, 'regular', 'published'],
+                ['FA2025', 'CSE-1201', 77, 'regular', 'submitted'],
+            ],
+            TestDataset::STUDENT_NON_RESIDENT => [
+                ['SP2024', 'CSE-1101', 80, 'regular', 'published'],
+                ['SP2024', 'CSE-1102', 76, 'regular', 'published'],
+                ['FA2024', 'CSE-1201', 70, 'regular', 'published'],
+                ['FA2024', 'CSE-1202', 66, 'regular', 'published'],
+                ['SP2025', 'CSE-1203', 60, 'regular', 'published'],
+            ],
+            TestDataset::STUDENT_LIBRARY_LOAN => [
+                ['SP2024', 'EEE-1101', 90, 'regular', 'published'],
+                ['SP2024', 'EEE-1102', 85, 'regular', 'published'],
+                ['FA2024', 'EEE-1201', 72, 'regular', 'published'],
+                ['FA2024', 'EEE-1202', 66, 'regular', 'published'],
+            ],
+        ];
+
+        foreach ($plan as $email => $rows) {
+            $student = Student::query()->where('user_id', User::query()->where('email', $email)->value('id'))->firstOrFail();
+
+            foreach ($rows as [$semesterCode, $courseCode, $marks, $attempt, $status]) {
+                $course = Course::query()->where('code', $courseCode)->firstOrFail();
+                $semester = Semester::query()->where('code', $semesterCode)->firstOrFail();
+
+                $offering = CourseOffering::query()->firstOrCreate(
+                    ['course_id' => $course->id, 'semester_id' => $semester->id, 'section' => 'A'],
+                    ['teacher_id' => $course->teachers()->value('teachers.id')],
+                );
+
+                $enrollment = Enrollment::query()->updateOrCreate(
+                    ['student_id' => $student->id, 'course_offering_id' => $offering->id],
+                    ['attempt_type' => $attempt, 'status' => 'enrolled'],
+                );
+
+                $grade = $scale->gradeFor((float) $marks);
+
+                Result::query()->updateOrCreate(['enrollment_id' => $enrollment->id], [
+                    'marks' => $marks,
+                    'letter' => $grade['letter'],
+                    'grade_point' => $grade['point'],
+                    'status' => $status,
+                    'submitted_at' => now(),
+                    'approved_at' => in_array($status, ['approved', 'published'], true) ? now() : null,
+                    'published_at' => $status === 'published' ? now() : null,
+                ]);
+            }
         }
     }
 

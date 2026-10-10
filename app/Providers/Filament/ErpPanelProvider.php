@@ -6,6 +6,7 @@ use App\Enums\ThemePreset;
 use App\Filament\Pages\Auth\EditProfile;
 use App\Filament\Pages\Auth\TwoFactorChallenge;
 use App\Http\Middleware\EnforceRoleTwoFactorSetup;
+use App\Http\Middleware\EnsureProfileComplete;
 use App\Http\Middleware\EnsureTwoFactorChallengePassed;
 use App\Http\Middleware\TrackUserSession;
 use App\Models\InstitutionSetting;
@@ -105,6 +106,7 @@ class ErpPanelProvider extends PanelProvider
                 Authenticate::class,
                 EnsureTwoFactorChallengePassed::class,
                 EnforceRoleTwoFactorSetup::class,
+                EnsureProfileComplete::class,
             ])
             ->renderHook(
                 PanelsRenderHook::HEAD_END,

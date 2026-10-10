@@ -23,6 +23,8 @@ class DatabaseSeeder extends Seeder
             CourseTeacherSeeder::class,
             StaffSeeder::class,
             StudentSeeder::class,
+            GradingScaleSeeder::class,
+            ProfileRequiredFieldSeeder::class,
         ]);
     }
 }

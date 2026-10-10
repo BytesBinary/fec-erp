@@ -51,6 +51,19 @@ final class TestDataset
     /** Eligible, but with an outstanding library loan; resident of hall SKH, EEE. */
     public const STUDENT_LIBRARY_LOAN = 'student.libraryloan@fec.test';
 
+    /**
+     * Hand-calculated expectations for the seeded published results
+     * (best attempt counts; CGPA rounded half up to 2 decimals).
+     *
+     * @var array<string, array{cgpa: string, earned_credits: float, semesters: array<string, string>}>
+     */
+    public const EXPECTED_RESULTS = [
+        self::STUDENT_ELIGIBLE => ['cgpa' => '3.56', 'earned_credits' => 12.0, 'semesters' => ['SP2024' => '3.83', 'FA2024' => '1.63', 'SP2025' => '3.50']],
+        self::STUDENT_UNFINISHED => ['cgpa' => '3.33', 'earned_credits' => 4.5, 'semesters' => ['SP2024' => '3.33']],
+        self::STUDENT_NON_RESIDENT => ['cgpa' => '3.53', 'earned_credits' => 12.0, 'semesters' => ['SP2024' => '3.92', 'FA2024' => '3.38', 'SP2025' => '3.00']],
+        self::STUDENT_LIBRARY_LOAN => ['cgpa' => '3.59', 'earned_credits' => 12.0, 'semesters' => ['SP2024' => '4.00', 'FA2024' => '3.35']],
+    ];
+
     public const DEPT_CSE = 'CSE';
 
     public const DEPT_EEE = 'EEE';

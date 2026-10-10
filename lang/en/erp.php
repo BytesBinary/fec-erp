@@ -33,6 +33,48 @@ return [
         'model_label' => 'audit log entry',
         'plural_model_label' => 'audit log',
     ],
+    'attempt_types' => [
+        'regular' => 'Regular',
+        'retake' => 'Retake',
+        'improvement' => 'Improvement',
+    ],
+
+    'result_statuses' => [
+        'draft' => 'Draft',
+        'submitted' => 'Submitted',
+        'approved' => 'Approved',
+        'published' => 'Published',
+    ],
+
+    'profile' => [
+        'nav' => 'My profile',
+        'title' => 'Complete your profile',
+        'missing' => ':field is required.',
+        'invalid' => ':field is not valid.',
+        'hall_required' => 'Choose your hall.',
+        'locked' => ':field cannot be changed after a clearance request. Ask the administration office.',
+        'section_identity' => 'Identity',
+        'section_contact' => 'Contact and residence',
+        'section_guardian' => 'Guardian and emergency contact',
+        'nid_help' => '10, 13 or 17 digits.',
+        'photo_help' => 'Passport-size photo (JPG or PNG, up to 2 MB). Crop to the 35:45 ratio.',
+        'is_residential' => 'I live in a hall',
+        'progress' => ':done of :total required fields complete',
+        'save' => 'Save profile',
+        'saved_complete' => 'Profile complete. Welcome!',
+        'saved_incomplete' => 'Saved. Some required fields are still missing.',
+    ],
+
+    'results' => [
+        'nav' => 'Result',
+        'title' => 'My results',
+        'cgpa' => 'CGPA',
+        'credits_earned' => 'Credits earned',
+        'semester_gpa' => 'Semester GPA',
+        'empty' => 'No published results yet.',
+        'print' => 'Download / print result sheet',
+    ],
+
     'notifications' => [
         'open' => 'Open',
     ],
